@@ -47,6 +47,7 @@ void Solver::solve() {
 
     // step 1. insert values to the cells
     insertValueToCells(grid, data_.cells);
+    std::cout << std::endl;
 
     for (auto& sq : data_.squares) {
         // data_.cells[sq].printPeers();
@@ -55,23 +56,26 @@ void Solver::solve() {
     //     data_.cells[sq].printUnits();
         // std::cout << "===" << std::endl;
     }
+ 
 }
 
 void Solver::insertValueToCells(std::vector<std::string>& grid, std::unordered_map<std::string, Cell>& cells) {
     // To start, every square can be any digit; then assign values from the grid.
     for (int i = 0; i < data_.squares.size(); i++) {
-        assign(data_.cells[data_.squares[i]], grid[i]);
+        std::cout << "\tcalling assign from parse_grid s: " << data_.cells[data_.squares[i]].key << " d: " << grid[i] << std::endl;
+        if (grid[i] != "0") {
+            assign(data_.cells[data_.squares[i]], grid[i]);
+        }
+    }
+
+    for (int i = 0; i < data_.squares.size(); i++) {
+        std::cout << "s: " << data_.squares[i] << " value: " << grid[i] << std::endl;
     }
 }
 
 void Solver::assign(Cell& cell, string& digit) {
-    // check if cell is empty, if not assign
-    if (cell.value.empty() || cell.value == "0") {
-        cell.value = digit;
-    }
-    if (cell.value == "0") { // return early
-        return;
-    }
+    std::cout << "assigning : (" << digit << ") to cell: [" << cell.key << "]" << std::endl;
+    
     // get all values besides candidate
     std::vector<std::string> other_values = cell.candidates;
     other_values.erase(
@@ -87,34 +91,45 @@ void Solver::assign(Cell& cell, string& digit) {
 void Solver::eliminate(Cell& cell, string& digit) {
     // if digit doesn't exist in cell value candidates return 
     if (!cell.hasCandidate(digit)) {
+        std::cout << "\t\tdoes not have candidate to eliminate for digit: " << digit << std::endl;
         return;
     }
     cell.removeCandidate(digit);
     // if cell candidate is greater than 1, remove from candidates 
     if (cell.candidates.size() == 0) {
+        std::cout << "\tcell value was 0 or null, key: " << cell.key << std::endl;
         return;
     } else if (cell.candidates.size() == 1) {
+        std::cout << "now removing from peers of " << cell.key << std::endl;
         for (auto& peer : cell.peers) {
             if (digit != "0") {
                 eliminate(data_.cells[peer], cell.candidates[0]);
             }
         }
     }
+    std::cout << "\tremoved : " << digit << " from cell: " << cell.key << std::endl;
     for (auto& unit : cell.units) {
-        // dplaces = [s for s in u ]
-        std::vector<std::string> places;
-        std::cout << "[ ";
-        for (auto& u : unit) {
-            std::cout << u << " ";
-            // cell.printCandidtes();
-            if (cell.hasCandidate(cell.key)) {
-                // places.push_back(u);
-                std::cout << "!!!!!!!!!!!!!!!!" << std::endl;
+        std::vector<std::string> dplaces;
+        for (auto& v : unit) {
+        // std::cout << " is " << digit << " in " << data_.cells[v].key <<" candidates?"<<std::endl;
+            if (data_.cells[v].hasCandidate(digit)) {
+                dplaces.push_back(v);
             }
         }
+        std::cout << "\t\t\t key: " << cell.key << " digit: " << digit << " " << " dplaces: [ ";
+        for (auto& dplace : dplaces) {
+            std::cout << '"' << dplace << '"' << " ";
+        }
         std::cout << "]" << std::endl;
+        if (dplaces.size() == 0) {
+            return;
+        }
+        if (dplaces.size() == 1) {
+            std::cout << "\tcalling assing from eliminate" << std::endl;
+            assign(data_.cells[dplaces[0]], digit);
+        }
     }
-
+    // std::cout << "\t\t\t\t-- the end of 1 loop --" << std::endl;
 }
 
 
