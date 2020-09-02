@@ -4,9 +4,77 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <iostream>
+#include <algorithm>
 #include <set>
 
 namespace Sudoku {
+
+
+struct Cell {
+public:
+   // this is the key of the cell, e.g. "A2", "C3", etc
+    std::string key;
+    // this is the value of the cell
+    std::string value;
+    // vector of units
+    std::vector<std::vector<std::string>> units;
+    // all possible cell values for this cell
+    std::vector<std::string> candidates;
+    // peers
+    std::set<std::string> peers;
+ 
+    // remove by target
+    void removeCandidate(std::string& target) {
+        candidates.erase(
+            std::remove_if(candidates.begin(), candidates.end(),
+            [&](std::string& s) { return s == target; }),
+        candidates.end());
+   }
+
+    // check if it has string
+    bool hasCandidate(std::string& s) {
+        return std::find(candidates.begin(), candidates.end(), s) != candidates.end();
+    }
+
+    // print the value of the cell
+    void printValue() {
+        if (!value.empty()) {
+            std::cout << "value at " << key << " is " << value << std::endl;
+        } else {
+            std::cout << "value is empty or has not been initialized.";
+        }
+    }
+    // print all possible candidates
+    void printCandidtes() {
+        std::cout << "candidate for: " << key << std::endl;
+        std::cout << "[ ";
+        for (auto& p : candidates) {
+            std::cout << p << " ";
+        }
+        std::cout << "]" << std::endl;
+    }
+    // print all units associated with cell
+    void printUnits() {
+        std::cout << "units for: " << key << std::endl;
+        for (auto& unit : units) {
+            std::cout << "[ ";
+            for (auto& v : unit) {
+                std::cout << v << " ";
+            }
+            std::cout << "]" << std::endl;
+        }
+    }
+    // print all peers associated with cell
+    void printPeers() {
+        std::cout << "peers for: " << key << std::endl;
+        std::cout << "[ ";
+        for (auto& peer : peers) {
+            std::cout << peer << " ";
+        }
+        std::cout << "]" << std::endl;
+    }
+};
 
 struct Metadata {
 public:
@@ -14,31 +82,21 @@ public:
     std::vector<std::string> rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
     std::vector<std::string> cols = digits;
     std::vector<std::string> squares = cross(rows, cols);
-    std::unordered_map<std::string, std::set<std::string>> peers;
-
+    std::unordered_map<std::string, Cell> cells;
+    std::vector<std::string> cross(std::vector<std::string>& A, std::vector<std::string>& B);
+ 
     // default constructor
     Metadata();
-
-    // get cross product from A & B
-    std::vector<std::string> cross(std::vector<std::string>& A, std::vector<std::string>& B);
-    
     // setting up unitlist
     void setupUnitlist(std::vector<std::vector<std::string>>& unitlist);
-    
-    // setup units
-    void setupUnits(
-        std::unordered_map<std::string, std::vector<std::vector<std::string>>>& units,
-        std::vector<std::vector<std::string>>& unitlist
-    );
-
+    // setup cells    
+    void setupCells(std::unordered_map<std::string, Cell>& cells, std::vector<std::vector<std::string>>& unitlist);
     // setup peers
-    void setupPeers(
-        std::unordered_map<std::string, std::set<std::string>>& peers,
-        std::unordered_map<std::string, std::vector<std::vector<std::string>>>& units
-    );
-
+    void setupPeers(std::unordered_map<std::string, Cell>& cells);
+    // destructor
     ~Metadata() = default;
 };
+
 
 } // namespace Sudoku
 

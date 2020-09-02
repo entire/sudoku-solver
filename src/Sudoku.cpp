@@ -41,102 +41,81 @@ void Solver::printMatrix(vector<vector<int>> &matrix)
     }
 }
 
-void Solver::setup() {
-    // setup grid, gridValues, values
-    std::vector<string> grid = { "4", "0", "0", "0", "0", "0", "8", "0", "5", "0", "3", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "7", "0", "0", "0", "0", "0", "0", "2", "0", "0", "0", "0", "0", "6", "0", "0", "0", "0", "0", "8", "0", "4", "0", "0", "0", "0", "0", "0", "1", "0", "0", "0", "0", "0", "0", "0", "6", "0", "3", "0", "7", "0", "5", "0", "0", "2", "0", "0", "0", "0", "0", "1", "0", "4", "0", "0", "0", "0", "0", "0" };
-    setupCells(grid, cells_);
+
+void Solver::solve() {
+    std::vector<std::string> grid = { "4", "0", "0", "0", "0", "0", "8", "0", "5", "0", "3", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "7", "0", "0", "0", "0", "0", "0", "2", "0", "0", "0", "0", "0", "6", "0", "0", "0", "0", "0", "8", "0", "4", "0", "0", "0", "0", "0", "0", "1", "0", "0", "0", "0", "0", "0", "0", "6", "0", "3", "0", "7", "0", "5", "0", "0", "2", "0", "0", "0", "0", "0", "1", "0", "4", "0", "0", "0", "0", "0", "0" };
+
+    // step 1. insert values to the cells
+    insertValueToCells(grid, data_.cells);
+
+    for (auto& sq : data_.squares) {
+        // data_.cells[sq].printPeers();
+        data_.cells[sq].printCandidtes();
+        data_.cells[sq].printValue();
+    //     data_.cells[sq].printUnits();
+        // std::cout << "===" << std::endl;
+    }
 }
 
-void Solver::setupCells(std::vector<string>& grid, std::unordered_map<string, Cell> cells) {
-
+void Solver::insertValueToCells(std::vector<std::string>& grid, std::unordered_map<std::string, Cell>& cells) {
     // To start, every square can be any digit; then assign values from the grid.
-    for (int i = 0; i < grid.size(); i++) {
-        string key = data_.squares[i];
-        // and set up cells
-        Cell cell;
-        cell.possibles = data_.digits;
-        cell.key = key;
-        cell.value = grid[i];
-        cells[key] = cell;
+    for (int i = 0; i < data_.squares.size(); i++) {
+        assign(data_.cells[data_.squares[i]], grid[i]);
     }
-
-    // this is just a test, take it out later
-    Cell cell = cells["A1"];
-    std::cout << "key: " << cell.key << std::endl;
-    std::cout << "value: " << cell.value << std::endl;
-    std::cout << "possibles: " << std::endl;
-    for (int i=0; i < cell.possibles.size(); i++) {
-        std::cout << "\t" << cell.possibles[i] << std::endl;
-    }
-    std::cout << "possibles after: " << std::endl;
-    for (int i=0; i<cell.possibles.size(); i++) {
-        std::cout << "\t" << cell.possibles[i] << std::endl;
-    }
-
-    assign(cell, cell.value);
-
 }
 
 void Solver::assign(Cell& cell, string& digit) {
-    std::cout << "cell value: " << cell.value << std::endl;
-    std::cout << "assign" << std::endl;
-
-    // remove it self if cell contains digit
-	if (cell.has(digit)){
-        std::cout << "removing digit" << std::endl;
-    	cell.remove(digit);
+    // check if cell is empty, if not assign
+    if (cell.value.empty() || cell.value == "0") {
+        cell.value = digit;
     }
-
-	//note this is the correct implementation of the "all" function due to its short-circuiting feature
-	for (int i =  0; i < cell.possibles.size(); ++i) {
-		eliminate(cell, cell.possibles[i]);
+    if (cell.value == "0") { // return early
+        return;
     }
+    // get all values besides candidate
+    std::vector<std::string> other_values = cell.candidates;
+    other_values.erase(
+        std::remove_if(other_values.begin(), other_values.end(),
+        [&](std::string& s) { return s == digit; }),
+    other_values.end());
+    // eliminate all other values that aren't the assigned value from candidate
+    for (auto& other : other_values) {
+        eliminate(cell, other);
+    } 
 }
 
 void Solver::eliminate(Cell& cell, string& digit) {
-	//cout << "eliminate is getting called with s=" << s << " and d=" << d << endl;
-	if(cell.has(digit)){
-		return;
-	}
-
-	cell.remove(digit);
-
-	//(1) If a square s is reduced to one value d2, then eliminate d2 from the peers.
-	if(cell.possibles.empty()){
-		return;
-    // if there's only one, 
-	} else if(cell.possibles.size() == 1){
-        
-		for (auto& sq_set : data_.peers[cell.key]){
-            for (auto& s: sq_set) {
-                std::cout << s << std::endl;
+    // if digit doesn't exist in cell value candidates return 
+    if (!cell.hasCandidate(digit)) {
+        return;
+    }
+    cell.removeCandidate(digit);
+    // if cell candidate is greater than 1, remove from candidates 
+    if (cell.candidates.size() == 0) {
+        return;
+    } else if (cell.candidates.size() == 1) {
+        for (auto& peer : cell.peers) {
+            if (digit != "0") {
+                eliminate(data_.cells[peer], cell.candidates[0]);
             }
-                       
-			// eliminate(cell, sq2);
-		}
-	}
+        }
+    }
+    for (auto& unit : cell.units) {
+        // dplaces = [s for s in u ]
+        std::vector<std::string> places;
+        std::cout << "[ ";
+        for (auto& u : unit) {
+            std::cout << u << " ";
+            // cell.printCandidtes();
+            if (cell.hasCandidate(cell.key)) {
+                // places.push_back(u);
+                std::cout << "!!!!!!!!!!!!!!!!" << std::endl;
+            }
+        }
+        std::cout << "]" << std::endl;
+    }
 
-	//(2) If a unit u is reduced to only one place for a value d, then put it there.
-	for(int i = 0; i < 3; ++i){
-		vector<string> dplaces = {};
-		vector<string> u = str.units[s][i];
-		for(int j = 0; j < 9; ++j){
-			if(get<0>(values)[u[j]].find(d) != string::npos){
-						string temp = u[j];
-						dplaces.push_back(temp);}}
-		if(dplaces.size() == 0){
-			get<1>(values) = false;
-			return;
-		}
-
-		else if(dplaces.size() == 1){
-			// cout << "assign is getting called within eliminate" << endl;
-			assign(values,dplaces[0],d);
-			// if(!get<1>(values)){return;}}}
-// 	return;
 }
-
-void
 
 
 } // namespace Sudoku

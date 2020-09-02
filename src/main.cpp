@@ -29,7 +29,7 @@ void testMatrix() {
     };
     Sudoku::Solver solver;
     // solver.printMatrix(matrix);
-    solver.setup();
+    solver.solve();
 }
 
 void startVideo() {

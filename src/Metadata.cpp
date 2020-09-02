@@ -11,15 +11,12 @@ namespace Sudoku
 
 Metadata::Metadata() {
     // setup unitlist
-    std::vector<std::vector<std::string>> unitlist{};
+    std::vector<std::vector<std::string>> unitlist;
     setupUnitlist(unitlist);
-
     // setup units
-    std::unordered_map<std::string, std::vector<std::vector<std::string>>> units;
-    setupUnits(units, unitlist);
-
+    setupCells(cells, unitlist);
     // setup peers
-    setupPeers(peers, units);
+    setupPeers(cells);
 }
 
 std::vector<std::string> Metadata::cross(std::vector<std::string>& A, std::vector<std::string>& B) {
@@ -79,38 +76,41 @@ void Metadata::setupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
     unitlist.insert(unitlist.end(), unitCross.begin(), unitCross.end());
 }
 
-void Metadata::setupUnits(
-    std::unordered_map<std::string, std::vector<std::vector<std::string>>> &units,
-    std::vector<std::vector<std::string>> &unitlist) {
-    for (auto &s : squares) {
+void Metadata::setupCells(std::unordered_map<std::string, Cell>& cells, std::vector<std::vector<std::string>>& unitlist) {
+    for (auto &k : squares) {
         for (auto &u : unitlist) {
-            // if s exists in u
-            if (std::find(u.begin(), u.end(), s) != u.end()) {
-                // if s isn't in units hashmap, initialize it
-                if (units.find(s) == units.end()) {
-                    units[s] = std::vector<std::vector<std::string>>{};
+            // if k exists in u
+            if (std::find(u.begin(), u.end(), k) != u.end()) {
+                // if k isn't in cells hashmap, initialize it
+                if (cells.find(k) == cells.end()) {
+                    Cell cell;
+                    cell.candidates = digits;
+                    cell.key = k; 
+                    cells[k] = cell;
                 }
                 // push_back u to units[s]
-                std::vector<std::vector<std::string>> unit = units[s];
-                unit.push_back(u);
-                units[s] = unit;
+                cells[k].units.push_back(u);
             }
         }
     }
+    // Cell cell = cells["C2"];
+    // cell.printUnits();
 }
 
-void Metadata::setupPeers(std::unordered_map<std::string, std::set<std::string>>& peers, std::unordered_map<std::string, std::vector<std::vector<std::string>>>& units) {
-    for (auto &s : squares) {
-        std::set<std::string> unitSet;
-        for (auto &u : units[s]) {
-            for (auto &sq : u) {
-                if (sq != s) {
-                    unitSet.insert(sq);
+void Metadata::setupPeers(std::unordered_map<std::string, Cell>& cells) {
+    for (auto& k : squares) {
+        std::set<std::string> peers;
+        for (auto& unit : cells[k].units) {
+            for (auto& v : unit) {
+                if (v != k) {
+                    peers.insert(v);
                 }
             }
         }
-        peers[s] = unitSet;
+        cells[k].peers = peers;
     }
+    // Cell cell = cells["C2"];
+    // cell.printPeers();
 }
 
 } // namespace Sudoku
