@@ -84,7 +84,7 @@ void Metadata::setupCells(std::unordered_map<std::string, Cell>& cells, std::vec
                 // if k isn't in cells hashmap, initialize it
                 if (cells.find(k) == cells.end()) {
                     Cell cell;
-                    cell.possibles = digits;
+                    cell.candidates = digits;
                     cell.key = k; 
                     cells[k] = cell;
                 }

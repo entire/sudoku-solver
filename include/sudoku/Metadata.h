@@ -20,22 +20,23 @@ public:
     // vector of units
     std::vector<std::vector<std::string>> units;
     // all possible cell values for this cell
-    std::vector<std::string> possibles;
+    std::vector<std::string> candidates;
     // peers
     std::set<std::string> peers;
  
     // remove by target
-    void remove(std::string& target) {
-        possibles.erase(
-            std::remove_if(possibles.begin(), possibles.end(),
+    void removeCandidate(std::string& target) {
+        candidates.erase(
+            std::remove_if(candidates.begin(), candidates.end(),
             [&](std::string& s) { return s == target; }),
-        possibles.end());
+        candidates.end());
    }
 
     // check if it has string
-    bool has(std::string& s) {
-        return std::find(possibles.begin(), possibles.end(), s) != possibles.end();
+    bool hasCandidate(std::string& s) {
+        return std::find(candidates.begin(), candidates.end(), s) != candidates.end();
     }
+
     // print the value of the cell
     void printValue() {
         if (!value.empty()) {
@@ -44,11 +45,11 @@ public:
             std::cout << "value is empty or has not been initialized.";
         }
     }
-    // print all possible values
-    void printPossibles() {
-        std::cout << "possibles for: " << key << std::endl;
+    // print all possible candidates
+    void printCandidtes() {
+        std::cout << "candidate for: " << key << std::endl;
         std::cout << "[ ";
-        for (auto& p : possibles) {
+        for (auto& p : candidates) {
             std::cout << p << " ";
         }
         std::cout << "]" << std::endl;

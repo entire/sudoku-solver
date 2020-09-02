@@ -23,9 +23,10 @@ private:
 public:
     // print matrix for convenience
     void printMatrix(std::vector<std::vector<int>>& matrix);
-    void setup();
-    void eliminate(Cell &cell, std::string &digit);
-    void assign(Cell &cell, std::string &digit);
+    void solve();
+    void insertValueToCells(std::vector<std::string>& grid, std::unordered_map<std::string, Cell>& cells);
+    void eliminate(Cell& cell, std::string& digit);
+    void assign(Cell& cell, std::string& digit);
 };
 
 
