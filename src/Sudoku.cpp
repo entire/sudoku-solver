@@ -50,8 +50,8 @@ void Solver::solve() {
 
     for (auto& sq : data_.squares) {
         // data_.cells[sq].printPeers();
-        // data_.cells[sq].printCandidtes();
-        // data_.cells[sq].printValue();
+        data_.cells[sq].printCandidtes();
+        data_.cells[sq].printValue();
     //     data_.cells[sq].printUnits();
         // std::cout << "===" << std::endl;
     }
@@ -89,20 +89,32 @@ void Solver::eliminate(Cell& cell, string& digit) {
     if (!cell.hasCandidate(digit)) {
         return;
     }
+    cell.removeCandidate(digit);
     // if cell candidate is greater than 1, remove from candidates 
-    if (cell.candidates.size() > 1) {
-        cell.removeCandidate(digit);
-    }
-    // if cell candidates is 1, it means we have the answer, remove value from all peer candidates
-    if (cell.candidates.size() == 1) {
-        std::cout << "cell : [" << cell.key << "] only has : " << cell.candidates[0] << std::endl;
+    if (cell.candidates.size() == 0) {
+        return;
+    } else if (cell.candidates.size() == 1) {
         for (auto& peer : cell.peers) {
             if (digit != "0") {
                 eliminate(data_.cells[peer], cell.candidates[0]);
             }
         }
     }
-    
+    for (auto& unit : cell.units) {
+        // dplaces = [s for s in u ]
+        std::vector<std::string> places;
+        std::cout << "[ ";
+        for (auto& u : unit) {
+            std::cout << u << " ";
+            // cell.printCandidtes();
+            if (cell.hasCandidate(cell.key)) {
+                // places.push_back(u);
+                std::cout << "!!!!!!!!!!!!!!!!" << std::endl;
+            }
+        }
+        std::cout << "]" << std::endl;
+    }
+
 }
 
 
