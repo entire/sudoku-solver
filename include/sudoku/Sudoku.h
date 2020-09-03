@@ -27,6 +27,7 @@ public:
     void insertValueToCells(std::vector<std::string>& grid, std::unordered_map<std::string, Cell>& cells);
     void eliminate(Cell& cell, std::string& digit);
     void assign(Cell& cell, std::string& digit);
+    void search(Cell& cell);
 };
 
 
