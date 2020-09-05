@@ -24,10 +24,11 @@ public:
     // print matrix for convenience
     void printMatrix(std::vector<std::vector<int>>& matrix);
     void solve();
-    void insertValueToCells(std::vector<std::string>& grid, std::unordered_map<std::string, Cell>& cells);
-    void eliminate(Cell& cell, std::string& digit);
-    void assign(Cell& cell, std::string& digit);
-    void search(Cell& cell);
+    void getMinValuesKeys(std::unordered_map<std::string, int>& values, std::vector<std::string>& res);
+    void insertValueToCells(std::vector<int>& grid, std::unordered_map<std::string, Cell>& cells);
+    void eliminate(Cell& cell, int& digit);
+    void assign(Cell& cell, int& digit);
+    void search(std::unordered_map<std::string, Cell>& cells);
 };
 
 

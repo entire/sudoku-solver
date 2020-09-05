@@ -20,20 +20,20 @@ public:
     // vector of units
     std::vector<std::vector<std::string>> units;
     // all possible cell values for this cell
-    std::vector<std::string> candidates;
+    std::vector<int> candidates;
     // peers
     std::set<std::string> peers;
  
     // remove by target
-    void removeCandidate(std::string& target) {
+    void removeCandidate(int& target) {
         candidates.erase(
             std::remove_if(candidates.begin(), candidates.end(),
-            [&](std::string& s) { return s == target; }),
+            [&](int& s) { return s == target; }),
         candidates.end());
    }
 
     // check if it has string
-    bool hasCandidate(std::string& s) {
+    bool hasCandidate(int& s) {
         return std::find(candidates.begin(), candidates.end(), s) != candidates.end();
     }
 
