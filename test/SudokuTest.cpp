@@ -14,9 +14,9 @@ std::vector<std::vector<int>> unsolved_matrix {
     {7, 0, 0, 0, 0, 6, 0, 0, 0},
     {6, 8, 2, 0, 0, 0, 0, 9, 0}};
 
-std::vector<std::string> digits = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+std::vector<int> digits = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 std::vector<std::string> rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-std::vector<std::string> cols = digits;
+std::vector<std::string> cols = Sudoku::Metadata::getStringsFromInts(digits);  
 
 TEST(SudokuMetadataTest,UnitlistSize)
 {

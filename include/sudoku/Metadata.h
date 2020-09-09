@@ -16,7 +16,7 @@ public:
    // this is the key of the cell, e.g. "A2", "C3", etc
     std::string key;
     // this is the value of the cell
-    std::string value;
+    int value;
     // vector of units
     std::vector<std::vector<std::string>> units;
     // all possible cell values for this cell
@@ -26,10 +26,15 @@ public:
  
     // remove by target
     void removeCandidate(int& target) {
+        // if (candidates.size() == 1) {
+        //     return;
+        // }
+        // std::cout << "key: " << this->key << " - removeCandidate: " << target << " - cand size: " << candidates.size() << std::endl;
         candidates.erase(
             std::remove_if(candidates.begin(), candidates.end(),
             [&](int& s) { return s == target; }),
         candidates.end());
+        // std::cout << "post remove canditate size: " << candidates.size() << std::endl;
    }
 
     // check if it has string
@@ -39,10 +44,10 @@ public:
 
     // print the value of the cell
     void printValue() {
-        if (!value.empty()) {
+        if (value == 0) {
             std::cout << "value at " << key << " is " << value << std::endl;
         } else {
-            std::cout << "value is empty or has not been initialized.";
+            std::cout << "value is empty or has not been initialized." << std::endl;
         }
     }
     // print all possible candidates
@@ -78,15 +83,18 @@ public:
 
 struct Metadata {
 public:
-    std::vector<std::string> digits = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    std::vector<int> digits = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     std::vector<std::string> rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-    std::vector<std::string> cols = digits;
+    std::vector<std::string> cols = getStringsFromInts(digits);
     std::vector<std::string> squares = cross(rows, cols);
     std::unordered_map<std::string, Cell> cells;
-    std::vector<std::string> cross(std::vector<std::string>& A, std::vector<std::string>& B);
- 
+
     // default constructor
     Metadata();
+    // cross two string vectors
+    std::vector<std::string> cross(std::vector<std::string>& A, std::vector<std::string>& B);
+    // get strings vector from ints
+    static std::vector<std::string> getStringsFromInts(std::vector<int>& ints);
     // setting up unitlist
     void setupUnitlist(std::vector<std::vector<std::string>>& unitlist);
     // setup cells    

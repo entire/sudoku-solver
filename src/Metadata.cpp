@@ -29,6 +29,14 @@ std::vector<std::string> Metadata::cross(std::vector<std::string>& A, std::vecto
     return cross;
 }
 
+std::vector<std::string> Metadata::getStringsFromInts(std::vector<int>& ints) {
+    std::vector<std::string> strings;
+    for (auto& i : ints) {
+        strings.push_back(std::to_string(i));
+    }
+    return strings;
+}
+
 void Metadata::setupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
     std::vector<std::vector<std::string>> colCross{};
     for (auto &c : cols) {

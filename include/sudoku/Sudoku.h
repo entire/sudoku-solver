@@ -24,11 +24,16 @@ public:
     // print matrix for convenience
     void printMatrix(std::vector<std::vector<int>>& matrix);
     void solve();
+    void getAllValuesExcept(std::vector<int>& others, int& to_remove);
     void getMinValuesKeys(std::unordered_map<std::string, int>& values, std::vector<std::string>& res);
     void insertValueToCells(std::vector<int>& grid, std::unordered_map<std::string, Cell>& cells);
+    
     void eliminate(Cell& cell, int& digit);
     void assign(Cell& cell, int& digit);
     void search(std::unordered_map<std::string, Cell>& cells);
+
+    // check if series of cells solves the puzzle or not
+    bool isSolved(std::unordered_map<std::string , Cell>& cells);
 };
 
 
