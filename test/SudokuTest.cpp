@@ -16,13 +16,13 @@ std::vector<std::vector<int>> unsolved_matrix {
 
 std::vector<int> digits = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 std::vector<std::string> rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-std::vector<std::string> cols = Sudoku::Metadata::getStringsFromInts(digits);  
+std::vector<std::string> cols = Sudoku::Metadata::GetStringsFromInts(digits);  
 
 TEST(SudokuMetadataTest,UnitlistSize)
 {
     Sudoku::Metadata metadata;
     std::vector<std::vector<std::string>> unitlist{};
-    metadata.setupUnitlist(unitlist);
+    metadata.SetupUnitlist(unitlist);
     ASSERT_EQ(27, unitlist.size());
 }
 

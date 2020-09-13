@@ -6,16 +6,16 @@
 #include <opencv2/imgproc.hpp>
 #include <sudoku/Sudoku.h>
 
-void startVideo();
-void testMatrix();
+void StartVideo();
+void TestMatrix();
 
 int main() {
     // startVideo();
-    testMatrix();
+    TestMatrix();
     return 0;
 }
 
-void testMatrix() {
+void TestMatrix() {
     std::vector<std::vector<int>> matrix { 
         { 0, 9, 0, 0, 0, 0, 8, 5, 3 },
 	    { 0, 0, 0, 8, 0, 0, 0, 0, 4 },
@@ -28,11 +28,11 @@ void testMatrix() {
 	    { 6, 8, 2, 0, 0, 0, 0, 9, 0 } 
     };
     Sudoku::Solver solver;
-    // solver.printMatrix(matrix);
-    solver.solve();
+    // solver.PrintMatrix(matrix);
+    solver.Solve();
 }
 
-void startVideo() {
+void StartVideo() {
     cv::VideoCapture camera(0);
     if (!camera.isOpened()) {
         std::cerr << "Error! couldn't open camera" << std::endl;

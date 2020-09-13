@@ -7,8 +7,6 @@
 #include <unordered_map>
 #include <set>
 
-#define UNASSIGNED 0
-
 using std::cout;
 using std::endl;
 using std::string;
@@ -17,7 +15,7 @@ using std::vector;
 namespace Sudoku
 {
 
-void Solver::printMatrix(vector<vector<int>> &matrix)
+void Solver::PrintMatrix(vector<vector<int>> &matrix)
 {
     cout << endl;
     for (int row = 0; row < matrix.size(); row++) {
@@ -42,169 +40,204 @@ void Solver::printMatrix(vector<vector<int>> &matrix)
 }
 
 
-void Solver::solve() {
+void Solver::Solve() {
     std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
 
     // step 1. insert values to the cells
-    insertValueToCells(grid, data_.cells);
+    bool couldAssign = InsertValueToCells(grid, data_.cells);
      
     // search all cells
-    search(data_.cells);
-    std::cout << std::endl;
+    Search(data_.cells, true, "Init");
 
     for (auto& sq : data_.squares) {
-        // data_.cells[sq].printPeers();
-        data_.cells[sq].printCandidtes();
-        // data_.cells[sq].printValue();
-    //     data_.cells[sq].printUnits();
+        // data_.cells[sq].PrintPeers();
+        data_.cells[sq].PrintCandidtes();
+        // data_.cells[sq].PrintValue();
+    //     data_.cells[sq].PrintUnits();
         // std::cout << === << std::endl;
     }
 
 }
 
-void Solver::insertValueToCells(std::vector<int>& grid, std::unordered_map<std::string, Cell>& cells) {
+bool Solver::InsertValueToCells(std::vector<int>& grid, std::unordered_map<std::string, Cell>& cells) {
     // To start, every square can be any digit; then assign values from the grid.
+    bool couldAssign = true;
     for (int i = 0; i < data_.squares.size(); i++) {
         if (grid[i] != 0) {
-            assign(data_.cells[data_.squares[i]], grid[i]);
+            if (!Assign(data_.cells[data_.squares[i]], grid[i])) {
+                couldAssign = false;
+            }
         }
     }
+    return false;
 }
 
-void Solver::assign(Cell& cell, int& digit) {
-    std::cout << "assigning d:" << digit << " to cell: " << cell.key << " " << "for values: ";
+bool Solver::Assign(Cell& cell, int& digit) {
+    PrintEvent("assigning", 1, digit, cell);
+    
+    // get all values besides candidate
+    std::vector<int> other_values = cell.candidates;
+    GetAllValuesExcept(other_values, digit);
+
+    // Eliminate all other values that aren't the assign value from candidate
+    for (auto& other : other_values) {
+        if (!Eliminate(cell, other)) {
+            std::cout << "assign false!" << std::endl;
+            return false;
+        }
+    } 
+    return true;
+}
+
+ void Solver::GetAllValuesExcept(std::vector<int>& others, int& to_remove) {
+    others.erase(
+        std::remove_if(others.begin(), others.end(),
+        [&](int& s) { return s == to_remove; }),    
+    others.end());
+}
+
+void Solver::PrintEvent(const std::string& message, const int& level, const int& digit, Cell& cell) {
+    std::string tabLevel(level, '\t');
+    std::cout << tabLevel << message << ": ";
+    std::cout << "cell: " << cell.key << " ";
+    std::cout << "digit: " << digit << " ";
+    std::cout << "values[s]: ";
     for (auto& c : cell.candidates) {
         std::cout << c;
     }
     std::cout << std::endl;
-    
-    // get all values besides candidate
-    std::vector<int> other_values = cell.candidates;
-    getAllValuesExcept(other_values, digit);
-
-    // eliminate all other values that aren't the assigned value from candidate
-    for (auto& other : other_values) {
-        eliminate(cell, other);
-    } 
 }
 
- void Solver::getAllValuesExcept(std::vector<int>& others, int& to_remove) {
-    others.erase(
-        std::remove_if(others.begin(), others.end(),
-        [&](int& s) { return s == to_remove; }),
-    others.end());
-}
-
-void Solver::eliminate(Cell& cell, int& digit) {
+bool Solver::Eliminate(Cell& cell, int& digit) {
     // if digit doesn't exist in cell value candidates return 
-    // std::cout << "\t1. possible size: " << cell.candidates.size() << std::endl;
-    if (!cell.hasCandidate(digit)) {
-        // std::cout << "\t\tdoes not have candidate to eliminate for digit: " << digit << std::endl;
-        return;
+    if (!cell.HasCandidate(digit)) {
+        // std::cout << "\t\t" << cell.key << " does not have candidate to Eliminate for digit: " << digit << std::endl;
+        return true;
     }
-    cell.removeCandidate(digit);
-    std::cout << "\t1. possible size: " << cell.candidates.size() << std::endl;
+    PrintEvent("eliminate", 1, digit, cell);
+    cell.RemoveCandidate(digit);
 
     // if cell candidate is greater than 1, remove from candidates 
-    if (cell.candidates.size() == 0) {
-        // std::cout << "\tcell value was 0 or null, key: " << cell.key << std::endl;
-        return;
+    if (cell.candidates.empty()) {
+        PrintEvent("contradiction:eliminate", 0, digit, cell);
+        return false;
     } else if (cell.candidates.size() == 1) {
-        // std::cout << "there's only one, now removing from peers of " << cell.key << std::endl;
+        PrintEvent("eliminate.peers", 2, digit, cell);
         for (auto& peer : cell.peers) {
             if (digit != 0 && cell.candidates.size() > 0) {
-                // std::cout << "eliminate d:" << digit << " from peers of cell: " << cell.key << std::endl;
-                eliminate(data_.cells[peer], cell.candidates[0]);
+                // std::cout << "eliminate d:" << digit << " from cell: " << data_.cells[peer].key << " which is a peer of " << cell.key << std::endl;
+                if (!Eliminate(data_.cells[peer], cell.candidates[0])) {
+                    std::cout << "eliminate 2 returned false!" << std::endl;
+                    return false;
+                }
             }
         }
     }
-    std::cout << "\tremoved : " << digit << " from cell: " << cell.key << std::endl;
     for (auto& unit : cell.units) {
         std::vector<std::string> dplaces;
         for (auto& v : unit) {
         // std::cout << " is " << digit << " in " << data_.cells[v].key <<" candidates?"<<std::endl;
-            if (data_.cells[v].hasCandidate(digit)) {
+            if (data_.cells[v].HasCandidate(digit)) {
                 dplaces.push_back(v);
             }
         }
         // std::cout << "\t\t\t key: " << cell.key << " digit: " << digit << " " << " dplaces: [ ";
         // for (auto& dplace : dplaces) {
-            // std::cout << '"' << dplace << '"' << " ";
+        //     std::cout << '"' << dplace << '"' << " ";
         // }
         // std::cout << "]" << std::endl;
-        if (dplaces.size() == 0) {
-            std::cout << "\tdplaces is zero" << std::endl;
-            return;
+        if (dplaces.empty()) {
+            // std::cout << "\tdplaces is zero" << std::endl;
+            std::cout << "Eliminate 3 returned false!" << std::endl;
+            return false;
         }
         if (dplaces.size() == 1) {
-            std::cout << "\tcalling assing from eliminate" << std::endl;
-            assign(data_.cells[dplaces[0]], digit);
+            // std::cout << "\tcalling assing from Eliminate" << std::endl;
+            if (!Assign(data_.cells[dplaces[0]], digit)) {
+                std::cout << "Eliminate 4 returned false!" << std::endl;
+                return false;
+            }
         }
     }
-    // std::cout << "\t\t\t\t-- the end of 1 loop --" << std::endl;
+    // if it did not fail, return true
+    return true;
 }
 
-void Solver::getMinValuesKeys(std::unordered_map<std::string, int>& values, std::vector<std::string>& res) {
-    // get minimum value
-    auto it = *std::min_element(std::begin(values), std::end(values),
-                        [](const auto& l, const auto& r) { 
-                            return l.second < r.second; 
-                        });
-    int min_value = std::get<1>(it);
-
-    // get keys for all the min values
-    for (auto& v : values) {
-        if (v.second == min_value) {
-            res.push_back(v.first);
-        }
-    }
-}
-
-void Solver::search(std::unordered_map<std::string, Cell>& cells) {
+bool Solver::Search(std::unordered_map<std::string, Cell>& cells, bool couldAssign, std::string caller) {
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << "ok search" << std::endl;
+    std::cout << "called by: " << caller << std::endl;
+
+    // if could Assign was false
+    if (!couldAssign) { 
+        std::cout << "search returned false! 1" << std::endl;
+        return false;
+    }
 
     // check if puzzle is solved
     if (isSolved(cells)) {
-        return;
+        return true;
     }
 
     // get unordered_map with key of sq and value of cell candidate size
-    std::unordered_map<std::string, int> values;
+    std::unordered_map<std::string, int> pos;
     for (auto& s : data_.squares) {
-        Cell cell_ = data_.cells[s];
+        Cell cell_ = cells[s];
         if (cell_.candidates.size() > 1) {
-           values[cell_.key] = cell_.candidates.size();
+           pos[cell_.key] = cell_.candidates.size();
         }
     }
-
-    // get keys for min values 
+    
+    // get keys for possible undetermined s values
     std::vector<std::string> res; 
-    getMinValuesKeys(values, res);
-
+    res.reserve(pos.size());
+    for (auto& p : pos) {
+        res.push_back(p.first);
+    }
+   
     // sort res vector
     std::sort(res.begin(), res.end(), 
-        [](std::string a, std::string b) {
-            return a < b;
+        [&](std::string a, std::string b) {
+            if (cells[a].candidates.size() == cells[b].candidates.size()) {
+                return a < b;
+            } else {
+                return cells[a].candidates.size() < cells[b].candidates.size();
+            }
         });
-   
-    // find new cells to assign and search
-    for (auto& s : res) {
+
+    // for (auto& r : res) {
+    //     std::cout << r << " : " << cells[r].candidates.size() << std::endl;
+    //     std::cout << "candidates: ";
+    //         for (auto& v : cells[r].candidates) {
+    //             std::cout << v;
+    //         }
+    //         std::cout << std::endl;
+    // }
+ 
+    // find new cells to Assign and search
+    bool search_success = true;
+    for (std::string& s : res) {
         std::unordered_map<std::string, Cell> to_search;
-        for (auto& p : data_.cells[s].candidates) {
-            std::cout << "size n:" << data_.cells[s].candidates.size() << " and s:" << s << " for values[s]: ";
-            for (auto& v : data_.cells[s].candidates) {
+        for (auto& p : cells[s].candidates) {
+            std::cout << "size n:" << cells[s].candidates.size() << " and s:" << s << " for values[s]: ";
+            for (auto& v : cells[s].candidates) {
                 std::cout << v;
             }
             std::cout << std::endl;
-            assign(data_.cells[s], p);
-            search(cells);
+            std::cout << "before search" << std::endl;
+            
+            if (!Search(cells, Assign(cells[s], p), s)) {
+                std::cout << "after search" << std::endl;
+                std::cout << "!" << std::endl;
+            }
         }
     }
+    return search_success;
+    
 }
 
 bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {

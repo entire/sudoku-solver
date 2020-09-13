@@ -21,19 +21,24 @@ private:
     Metadata data_;
 
 public:
+    // use compiler generated default constructor
+    Solver() = default;
+    // don't generate a copy constructor
+    Solver(const Solver&) = delete;
+    // solve the sudoku
+    void Solve();
     // print matrix for convenience
-    void printMatrix(std::vector<std::vector<int>>& matrix);
-    void solve();
-    void getAllValuesExcept(std::vector<int>& others, int& to_remove);
-    void getMinValuesKeys(std::unordered_map<std::string, int>& values, std::vector<std::string>& res);
-    void insertValueToCells(std::vector<int>& grid, std::unordered_map<std::string, Cell>& cells);
-    
-    void eliminate(Cell& cell, int& digit);
-    void assign(Cell& cell, int& digit);
-    void search(std::unordered_map<std::string, Cell>& cells);
+    static void PrintMatrix(std::vector<std::vector<int>>& matrix);
+    static void GetAllValuesExcept(std::vector<int>& others, int& to_remove);
+    static void PrintEvent(const std::string& message, const int& level, const int& digit, Cell& cell);
+
+    bool InsertValueToCells(std::vector<int>& grid, std::unordered_map<std::string, Cell>& cells);
+    bool Eliminate(Cell& cell, int& digit);
+    bool Assign(Cell& cell, int& digit);
+    bool Search(std::unordered_map<std::string, Cell>& cells, bool couldAssign, std::string caller);
 
     // check if series of cells solves the puzzle or not
-    bool isSolved(std::unordered_map<std::string , Cell>& cells);
+    static bool isSolved(std::unordered_map<std::string , Cell>& cells);
 };
 
 

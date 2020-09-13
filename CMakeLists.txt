@@ -3,7 +3,7 @@ set(PROJECT_NAME sudoku)
 project(${PROJECT_NAME})
 find_package( OpenCV REQUIRED )
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 include_directories(include)

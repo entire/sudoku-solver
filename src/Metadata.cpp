@@ -10,16 +10,16 @@ namespace Sudoku
 {
 
 Metadata::Metadata() {
-    // setup unitlist
     std::vector<std::vector<std::string>> unitlist;
-    setupUnitlist(unitlist);
+    // setup unitlist
+    SetupUnitlist(unitlist);
     // setup units
-    setupCells(cells, unitlist);
+    SetupCells(cells, unitlist);
     // setup peers
-    setupPeers(cells);
+    SetupPeers(cells);
 }
 
-std::vector<std::string> Metadata::cross(std::vector<std::string>& A, std::vector<std::string>& B) {
+std::vector<std::string> Metadata::Cross(std::vector<std::string>& A, std::vector<std::string>& B) {
     std::vector<std::string> cross;
     for (auto & i : A) {
         for (auto & j : B) {
@@ -29,7 +29,7 @@ std::vector<std::string> Metadata::cross(std::vector<std::string>& A, std::vecto
     return cross;
 }
 
-std::vector<std::string> Metadata::getStringsFromInts(std::vector<int>& ints) {
+std::vector<std::string> Metadata::GetStringsFromInts(std::vector<int>& ints) {
     std::vector<std::string> strings;
     for (auto& i : ints) {
         strings.push_back(std::to_string(i));
@@ -37,21 +37,21 @@ std::vector<std::string> Metadata::getStringsFromInts(std::vector<int>& ints) {
     return strings;
 }
 
-void Metadata::setupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
+void Metadata::SetupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
     std::vector<std::vector<std::string>> colCross{};
     for (auto &c : cols) {
         std::vector<std::string> col{c};
-        colCross.push_back(cross(rows, col));
+        colCross.push_back(Cross(rows, col));
     }
 
     std::vector<std::vector<std::string>> rowCross{};
     for (auto &r : rows) {
         std::vector<std::string> row{r};
-        rowCross.push_back(cross(row, cols));
+        rowCross.push_back(Cross(row, cols));
     }
 
-    std::vector<std::vector<std::string>> rowUnitIdentifiers;
-    std::vector<std::vector<std::string>> colUnitIdentifiers;
+    std::vector <std::vector<std::string>> rowUnitIdentifiers;
+    std::vector <std::vector<std::string>> colUnitIdentifiers;
     int unitSize = 3;           // sudoku is a 3 x 3 x 3 grid
     int lineSize = rows.size(); // line is row or column in a grid, 3 x 3
     for (int i = unitSize; i <= lineSize; i += unitSize) {
@@ -84,7 +84,7 @@ void Metadata::setupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
     unitlist.insert(unitlist.end(), unitCross.begin(), unitCross.end());
 }
 
-void Metadata::setupCells(std::unordered_map<std::string, Cell>& cells, std::vector<std::vector<std::string>>& unitlist) {
+void Metadata::SetupCells(std::unordered_map<std::string, Cell>& cells, std::vector<std::vector<std::string>>& unitlist) {
     for (auto &k : squares) {
         for (auto &u : unitlist) {
             // if k exists in u
@@ -102,10 +102,10 @@ void Metadata::setupCells(std::unordered_map<std::string, Cell>& cells, std::vec
         }
     }
     // Cell cell = cells["C2"];
-    // cell.printUnits();
+    // cell.PrintUnits();
 }
 
-void Metadata::setupPeers(std::unordered_map<std::string, Cell>& cells) {
+void Metadata::SetupPeers(std::unordered_map<std::string, Cell>& cells) {
     for (auto& k : squares) {
         std::set<std::string> peers;
         for (auto& unit : cells[k].units) {
@@ -118,7 +118,7 @@ void Metadata::setupPeers(std::unordered_map<std::string, Cell>& cells) {
         cells[k].peers = peers;
     }
     // Cell cell = cells["C2"];
-    // cell.printPeers();
+    // cell.PrintPeers();
 }
 
 } // namespace Sudoku
