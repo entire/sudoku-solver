@@ -10,7 +10,7 @@ include_directories(include)
 add_executable(${PROJECT_NAME}
         src/main.cpp
         src/Sudoku.cpp
-        src/Metadata.cpp
+        src/Variables.cpp
         )
 target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS} )
 

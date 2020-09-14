@@ -1,6 +1,6 @@
 // tests.cpp
 #include "../src/Sudoku.cpp"
-#include "../src/Metadata.cpp"
+#include "../src/Variables.cpp"
 #include <gtest/gtest.h>
 
 std::vector<std::vector<int>> unsolved_matrix {
@@ -16,13 +16,13 @@ std::vector<std::vector<int>> unsolved_matrix {
 
 std::vector<int> digits = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 std::vector<std::string> rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-std::vector<std::string> cols = Sudoku::Metadata::GetStringsFromInts(digits);  
+std::vector<std::string> cols = Sudoku::Variable::GetStringsFromInts(digits);  
 
-TEST(SudokuMetadataTest,UnitlistSize)
+TEST(SudokuVariableTest,UnitlistSize)
 {
-    Sudoku::Metadata metadata;
+    Sudoku::Variables v;
     std::vector<std::vector<std::string>> unitlist{};
-    metadata.SetupUnitlist(unitlist);
+    v.SetupUnitlist(unitlist);
     ASSERT_EQ(27, unitlist.size());
 }
 

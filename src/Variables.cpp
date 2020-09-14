@@ -1,4 +1,4 @@
-#include <sudoku/Metadata.h>
+#include <sudoku/Variables.h>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -9,7 +9,7 @@
 namespace Sudoku
 {
 
-Metadata::Metadata() {
+Variables::Variables() {
     std::vector<std::vector<std::string>> unitlist;
     // setup unitlist
     SetupUnitlist(unitlist);
@@ -19,7 +19,7 @@ Metadata::Metadata() {
     SetupPeers(cells);
 }
 
-std::vector<std::string> Metadata::Cross(std::vector<std::string>& A, std::vector<std::string>& B) {
+std::vector<std::string> Variables::Cross(std::vector<std::string>& A, std::vector<std::string>& B) {
     std::vector<std::string> cross;
     for (auto & i : A) {
         for (auto & j : B) {
@@ -29,7 +29,7 @@ std::vector<std::string> Metadata::Cross(std::vector<std::string>& A, std::vecto
     return cross;
 }
 
-std::vector<std::string> Metadata::GetStringsFromInts(std::vector<int>& ints) {
+std::vector<std::string> Variables::GetStringsFromInts(std::vector<int>& ints) {
     std::vector<std::string> strings;
     for (auto& i : ints) {
         strings.push_back(std::to_string(i));
@@ -37,7 +37,7 @@ std::vector<std::string> Metadata::GetStringsFromInts(std::vector<int>& ints) {
     return strings;
 }
 
-void Metadata::SetupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
+void Variables::SetupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
     std::vector<std::vector<std::string>> colCross{};
     for (auto &c : cols) {
         std::vector<std::string> col{c};
@@ -84,7 +84,7 @@ void Metadata::SetupUnitlist(std::vector<std::vector<std::string>> &unitlist) {
     unitlist.insert(unitlist.end(), unitCross.begin(), unitCross.end());
 }
 
-void Metadata::SetupCells(std::unordered_map<std::string, Cell>& cells, std::vector<std::vector<std::string>>& unitlist) {
+void Variables::SetupCells(std::unordered_map<std::string, Cell>& cells, std::vector<std::vector<std::string>>& unitlist) {
     for (auto &k : squares) {
         for (auto &u : unitlist) {
             // if k exists in u
@@ -105,7 +105,7 @@ void Metadata::SetupCells(std::unordered_map<std::string, Cell>& cells, std::vec
     // cell.PrintUnits();
 }
 
-void Metadata::SetupPeers(std::unordered_map<std::string, Cell>& cells) {
+void Variables::SetupPeers(std::unordered_map<std::string, Cell>& cells) {
     for (auto& k : squares) {
         std::set<std::string> peers;
         for (auto& unit : cells[k].units) {
