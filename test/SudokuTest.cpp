@@ -16,7 +16,7 @@ std::vector<std::vector<int>> unsolved_matrix {
 
 std::vector<int> digits = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 std::vector<std::string> rows = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-std::vector<std::string> cols = Sudoku::Variable::GetStringsFromInts(digits);  
+std::vector<std::string> cols = Sudoku::Variables::GetStringsFromInts(digits);  
 
 TEST(SudokuVariableTest,UnitlistSize)
 {

@@ -19,23 +19,24 @@ namespace Sudoku
 void Solver::Solve() {
     std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
 
-    auto game = std::make_shared<Game>();
+
+    auto game = std::make_shared<Game>(data_.cells);
     // step 1. insert values to the cells
-    bool couldAssign = InsertValueToCells(grid, game);
+    InsertValueToCells(grid, game);
      
     // search all cells
-    Search(game, true, "Init");
+    std::shared_ptr<Game> finished = Search(game);
 
     for (auto& sq : data_.squares) {
-        // data_.cells[sq].PrintPeers();
-        game->cells[sq].PrintCandidtes();
-        // data_.cells[sq].PrintValue();
-    //     data_.cells[sq].PrintUnits();
+        // finished->cells[sq].PrintPeers();
+        finished->cells[sq].PrintCandidtes();
+        // finished->cells[sq].PrintValue();
+    //     finished->cells[sq].PrintUnits();
         // std::cout << === << std::endl;
     }
 }
 
-bool Solver::InsertValueToCells(std::vector<int>& grid, std::shared_ptr<Game>& game) {
+void Solver::InsertValueToCells(std::vector<int>& grid, std::shared_ptr<Game>& game) {
     // To start, every square can be any digit; then assign values from the grid.
     bool couldAssign = true;
     for (int i = 0; i < data_.squares.size(); i++) {
@@ -45,11 +46,10 @@ bool Solver::InsertValueToCells(std::vector<int>& grid, std::shared_ptr<Game>& g
             }
         }
     }
-    return false;
 }
 
-bool Solver::Assign(std::shared_ptr<Game>& game, std::string& key, int& digit) {
-    Cell cell = game->cells[key];
+bool Solver::Assign(std::shared_ptr<Sudoku::Game>& game, std::string& key, int& digit) {
+    Cell& cell = game->cells[key];
     PrintEvent("assigning", 1, digit, cell);
     
     // get all values besides candidate
@@ -66,7 +66,7 @@ bool Solver::Assign(std::shared_ptr<Game>& game, std::string& key, int& digit) {
     return true;
 }
 
- void Solver::GetAllValuesExcept(std::vector<int>& others, int& to_remove) {
+void Solver::GetAllValuesExcept(std::vector<int>& others, int& to_remove) {
     others.erase(
         std::remove_if(others.begin(), others.end(),
         [&](int& s) { return s == to_remove; }),    
@@ -85,16 +85,15 @@ void Solver::PrintEvent(const std::string& message, const int& level, const int&
     std::cout << std::endl;
 }
 
-
 bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string& key, int& digit) {
     // if digit doesn't exist in cell value candidates return 
-    Cell cell = game->cells[key];
+    Cell& cell = game->cells[key];
     if (!cell.HasCandidate(digit)) {
         // std::cout << "\t\t" << cell.key << " does not have candidate to Eliminate for digit: " << digit << std::endl;
         return true;
     }
-    PrintEvent("eliminate", 1, digit, cell);
     cell.RemoveCandidate(digit);
+    PrintEvent("eliminated", 1, digit, cell);
 
     // if cell candidate is greater than 1, remove from candidates 
     if (cell.candidates.empty()) {
@@ -142,24 +141,24 @@ bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string& key, int& digit
     return true;
 }
 
-bool Solver::Search(std::shared_ptr<Game>& game, bool couldAssign, std::string caller) {
+std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << std::endl; 
     std::cout << "ok search" << std::endl;
-    std::cout << "called by: " << caller << std::endl;
 
     // if could Assign was false
-    if (!couldAssign) { 
+    if (game->state == GameState::failed) { 
         std::cout << "search returned false! 1" << std::endl;
-        return false;
+        return std::move(game);
     }
 
     // check if puzzle is solved
     if (isSolved(game->cells)) {
-        return true;
+        game->state = GameState::complete;
+        return std::move(game);
     }
 
     // get unordered_map with key of sq and value of cell candidate size
@@ -188,36 +187,31 @@ bool Solver::Search(std::shared_ptr<Game>& game, bool couldAssign, std::string c
             }
         });
 
-    // for (auto& r : res) {
-    //     std::cout << r << " : " << game->cells[r].candidates.size() << std::endl;
-    //     std::cout << "candidates: ";
-    //         for (auto& v : game->cells[r].candidates) {
-    //             std::cout << v;
-    //         }
-    //         std::cout << std::endl;
-    // }
- 
-    // find new cells to Assign and search
-    bool search_success = true;
-    for (std::string& s : res) {
-        for (auto& p : game->cells[s].candidates) {
-            std::cout << "size n:" << game->cells[s].candidates.size() << " and s:" << s << " for values[s]: ";
-            for (auto& v : game->cells[s].candidates) {
-                std::cout << v;
-            }
-            std::cout << std::endl;
-            std::cout << "before search" << std::endl;
+    // this is the key with the minimum possible candidates
+    std::string min_cand_key = res[0];
+    std::cout << "size n:" << game->cells[min_cand_key].candidates.size() << " and s:";
+    std::cout << min_cand_key << " for values[s]: ";
+    for (auto& v : game->cells[min_cand_key].candidates) {
+        std::cout << v;
+    }
 
-            auto game_to_test = std::make_shared<Game>(game);
-            
-            if (!Search(game, Assign(game, s, p), s)) {
-                std::cout << "after search" << std::endl;
-                std::cout << "!" << std::endl;
-            }
+    std::vector<std::shared_ptr<Game>> search_results;
+    for (auto& p : game->cells[min_cand_key].candidates) {
+        auto game_to_test = std::make_shared<Game>(game);
+        if (!Assign(game_to_test, min_cand_key, p)) {
+            game_to_test->state = GameState::failed;
+        }
+        search_results.push_back(Search(game_to_test));
+    }
+
+    for (auto search_result : search_results) {
+        if (search_result->state == GameState::failed) { // search
+            std::cout << "it failed" << std::endl;
+        } else {
+            return search_result;
         }
     }
-    return search_success;
-    
+    return search_results[0]; // this will be a GameStatus::failed search result
 }
 
 bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {
