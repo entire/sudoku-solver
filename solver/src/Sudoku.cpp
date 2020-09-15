@@ -19,19 +19,18 @@ namespace Sudoku
 void Solver::Solve() {
     std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
 
-
     auto game = std::make_shared<Game>(data_.cells);
     // step 1. insert values to the cells
     InsertValueToCells(grid, game);
      
-    // search all cells
+    // search all cells, returns solved solution
     std::shared_ptr<Game> finished = Search(game);
 
     for (auto& sq : data_.squares) {
         // finished->cells[sq].PrintPeers();
-        finished->cells[sq].PrintCandidtes();
+        // finished->cells[sq].PrintCandidtes();
         // finished->cells[sq].PrintValue();
-    //     finished->cells[sq].PrintUnits();
+        // finished->cells[sq].PrintUnits();
         // std::cout << === << std::endl;
     }
 }
@@ -142,22 +141,16 @@ bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string& key, int& digit
 }
 
 std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
-    std::cout << std::endl; 
-    std::cout << std::endl; 
-    std::cout << std::endl; 
-    std::cout << std::endl; 
-    std::cout << std::endl; 
-    std::cout << "ok search" << std::endl;
+    // check if puzzle is solved
+    if (isSolved(game->cells)) {
+        game->state = GameState::complete;
+        std::cout << "solved!" << std::endl;
+        return std::move(game);
+    }
 
     // if could Assign was false
     if (game->state == GameState::failed) { 
         std::cout << "search returned false! 1" << std::endl;
-        return std::move(game);
-    }
-
-    // check if puzzle is solved
-    if (isSolved(game->cells)) {
-        game->state = GameState::complete;
         return std::move(game);
     }
 
@@ -189,35 +182,45 @@ std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
 
     // this is the key with the minimum possible candidates
     std::string min_cand_key = res[0];
-    std::cout << "size n:" << game->cells[min_cand_key].candidates.size() << " and s:";
-    std::cout << min_cand_key << " for values[s]: ";
+    // std::cout << "size n:" << game->cells[min_cand_key].candidates.size() << " and s:";
+    // std::cout << min_cand_key << " for values[s]: ";
     for (auto& v : game->cells[min_cand_key].candidates) {
         std::cout << v;
     }
 
+    // search for a non-failing solution and keep the results to see if they failed
     std::vector<std::shared_ptr<Game>> search_results;
     for (auto& p : game->cells[min_cand_key].candidates) {
         auto game_to_test = std::make_shared<Game>(game);
         if (!Assign(game_to_test, min_cand_key, p)) {
             game_to_test->state = GameState::failed;
         }
-        search_results.push_back(Search(game_to_test));
+        search_results.push_back(std::move(Search(game_to_test)));
     }
 
+    // iterate through search results, if it works, return
     for (auto search_result : search_results) {
         if (search_result->state == GameState::failed) { // search
             std::cout << "it failed" << std::endl;
         } else {
-            return search_result;
+            std::cout << "it worked" << std::endl;
+            // run it one more time to check to see if the puzzle is solved yet
+            return std::move(Search(search_result));
         }
     }
-    return search_results[0]; // this will be a GameStatus::failed search result
+    // since there are more possible wrong configurations, wait to see if iterating through
+    // search results produced any good results, if not just returned the first one in the
+    // search_results which will have a GameStats::failed
+    return std::move(search_results[0]);
 }
 
 bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {
+    std::cout << "is it solved?" << std::endl;
     bool solved = true;
     for (auto& c : cells) {
         if (c.second.candidates.size() > 1) {
+            std::cout << "no: " << c.second.key << std::endl;
+            std::cout << "size: " << c.second.key.size() << std::endl;
             solved = false;
             break;
         }
