@@ -13,6 +13,7 @@ int main() {
 
     // recognizer
     Sudoku::Recognizer recognizer;
+    recognizer.SetDebugMode(true);
     recognizer.Setup();
 
     // digit classifier
