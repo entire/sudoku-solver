@@ -20,7 +20,7 @@ void Solver::Solve() {
     std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
 
     auto game = std::make_shared<Game>(data_.cells);
-    // step 1. insert values to the cells
+    // init game with cells
     InsertValueToCells(grid, game);
      
     // search all cells, returns solved solution
@@ -58,7 +58,6 @@ bool Solver::Assign(std::shared_ptr<Sudoku::Game>& game, std::string& key, int& 
     // Eliminate all other values that aren't the assign value from candidate
     for (auto& other : other_values) {
         if (!Eliminate(game, key, other)) {
-            std::cout << "assign false!" << std::endl;
             return false;
         }
     } 
@@ -88,7 +87,6 @@ bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string& key, int& digit
     // if digit doesn't exist in cell value candidates return 
     Cell& cell = game->cells[key];
     if (!cell.HasCandidate(digit)) {
-        // std::cout << "\t\t" << cell.key << " does not have candidate to Eliminate for digit: " << digit << std::endl;
         return true;
     }
     cell.RemoveCandidate(digit);
@@ -110,33 +108,25 @@ bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string& key, int& digit
             }
         }
     }
+    // by using process of elimination, for squares that have one possible value
+    // see if we can see if we can assign a value there
     for (auto& unit : cell.units) {
         std::vector<std::string> dplaces;
         for (auto& v : unit) {
-        // std::cout << " is " << digit << " in " << data_.cells[v].key <<" candidates?"<<std::endl;
             if (game->cells[v].HasCandidate(digit)) {
                 dplaces.push_back(v);
             }
         }
-        // std::cout << "\t\t\t key: " << cell.key << " digit: " << digit << " " << " dplaces: [ ";
-        // for (auto& dplace : dplaces) {
-        //     std::cout << '"' << dplace << '"' << " ";
-        // }
-        // std::cout << "]" << std::endl;
         if (dplaces.empty()) {
-            // std::cout << "\tdplaces is zero" << std::endl;
-            std::cout << "Eliminate 3 returned false!" << std::endl;
             return false;
         }
         if (dplaces.size() == 1) {
-            // std::cout << "\tcalling assing from Eliminate" << std::endl;
             if (!Assign(game, dplaces[0], digit)) {
-                std::cout << "Eliminate 4 returned false!" << std::endl;
                 return false;
             }
         }
     }
-    // if it did not fail, return true
+    // if it did not fail and return, it must have worked
     return true;
 }
 
@@ -148,7 +138,7 @@ std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
         return std::move(game);
     }
 
-    // if could Assign was false
+    // check if GameState is failed
     if (game->state == GameState::failed) { 
         std::cout << "search returned false! 1" << std::endl;
         return std::move(game);
@@ -170,7 +160,7 @@ std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
         res.push_back(p.first);
     }
    
-    // sort res vector
+    // then sort res vector
     std::sort(res.begin(), res.end(), 
         [&](std::string a, std::string b) {
             if (game->cells[a].candidates.size() == game->cells[b].candidates.size()) {
@@ -180,25 +170,23 @@ std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
             }
         });
 
-    // this is the key with the minimum possible candidates
+    // then get the key of square w/ smallest candidate.size()
     std::string min_cand_key = res[0];
-    // std::cout << "size n:" << game->cells[min_cand_key].candidates.size() << " and s:";
-    // std::cout << min_cand_key << " for values[s]: ";
-    for (auto& v : game->cells[min_cand_key].candidates) {
-        std::cout << v;
-    }
 
     // search for a non-failing solution and keep the results to see if they failed
     std::vector<std::shared_ptr<Game>> search_results;
     for (auto& p : game->cells[min_cand_key].candidates) {
+        // make a copy of shared_ptr to see if this possible value will work out
+        // without polluting our base `game` ptr
         auto game_to_test = std::make_shared<Game>(game);
+        // check if it fails to assign / eliminate properly
         if (!Assign(game_to_test, min_cand_key, p)) {
             game_to_test->state = GameState::failed;
         }
         search_results.push_back(std::move(Search(game_to_test)));
     }
 
-    // iterate through search results, if it works, return
+    // iterate through search results (i.e. possible games)
     for (auto search_result : search_results) {
         if (search_result->state == GameState::failed) { // search
             std::cout << "it failed" << std::endl;
@@ -215,12 +203,9 @@ std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
 }
 
 bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {
-    std::cout << "is it solved?" << std::endl;
     bool solved = true;
     for (auto& c : cells) {
         if (c.second.candidates.size() > 1) {
-            std::cout << "no: " << c.second.key << std::endl;
-            std::cout << "size: " << c.second.key.size() << std::endl;
             solved = false;
             break;
         }

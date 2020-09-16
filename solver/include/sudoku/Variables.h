@@ -25,17 +25,11 @@ public:
  
     // remove by target
     void RemoveCandidate(int& target) {
-        // if (candidates.size() == 1) {
-        //     return;
-        // }
-        // std::cout << "key: " << this->key << " - RemoveCandidate: " << target << " - cand size: " << candidates.size() << std::endl;
         candidates.erase(
             std::remove_if(candidates.begin(), candidates.end(),
             [&](int& s) { return s == target; }),
         candidates.end());
-        // std::cout << "post remove canditate size: " << candidates.size() << std::endl;
-   }
-
+    }
     // check if the candidate has number
     bool HasCandidate(int& s) {
         return std::find(candidates.begin(), candidates.end(), s) != candidates.end();
@@ -90,7 +84,7 @@ public:
     std::unordered_map<std::string, Cell> cells;
 
     // default constructor
-    Variables();
+    Variables() = default;
     // cross two string vectors
     std::vector<std::string> Cross(std::vector<std::string>& A, std::vector<std::string>& B);
     // get strings vector from ints

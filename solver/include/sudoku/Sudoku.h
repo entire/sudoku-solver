@@ -28,11 +28,8 @@ public:
     std::unordered_map<std::string, Cell> cells;
     // current game state
     GameState state = GameState::inprogress;
-
-    void worksForDigit(int digit) {
-       std::cout << "works for digit" << std::endl; 
-    }
 };
+
 class Solver {
 private:
     std::vector<std::vector<int>> matrix_;
