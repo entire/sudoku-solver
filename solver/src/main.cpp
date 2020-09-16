@@ -4,20 +4,25 @@
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include <sudoku/Sudoku.h>
+#include "sudoku/Sudoku.h"
+#include "ocr/Recognizer.h"
 
 void StartVideo();
-void TestMatrix();
 
 int main() {
-    // startVideo();
-    TestMatrix();
-    return 0;
-}
 
-void TestMatrix() {
-    Sudoku::Solver solver;
-    solver.Solve();
+    // recognizer
+    Sudoku::Recognizer recognizer;
+    recognizer.Setup();
+
+    // digit classifier
+
+    // main solver
+//    std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
+//    Sudoku::Solver solver;
+//    solver.Solve(grid);
+
+    return 0;
 }
 
 void StartVideo() {

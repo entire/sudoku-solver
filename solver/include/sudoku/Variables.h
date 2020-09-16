@@ -84,7 +84,7 @@ public:
     std::unordered_map<std::string, Cell> cells;
 
     // default constructor
-    Variables() = default;
+    Variables();
     // cross two string vectors
     std::vector<std::string> Cross(std::vector<std::string>& A, std::vector<std::string>& B);
     // get strings vector from ints

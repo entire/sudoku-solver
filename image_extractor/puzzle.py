@@ -4,7 +4,7 @@ import numpy as np
 import imutils
 import cv2
 
-def find_puzzle(image, debug=False):
+def find_puzzle(image, debug=True):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (7,7), 3)
     thresh = cv2.adaptiveThreshold(
@@ -17,9 +17,8 @@ def find_puzzle(image, debug=False):
     )
     not_thresh = cv2.bitwise_not(thresh, thresh)
 
-    # if debug:
-        # cv2.imshow("puzzle thresh", not_thresh)
-        # cv2.waitKey(0)
+    cv2.imshow("puzzle thresh", not_thresh)
+    cv2.waitKey(0)
     
     # ok cool, now we find some contours
     contours = cv2.findContours(
@@ -44,11 +43,11 @@ def find_puzzle(image, debug=False):
     if puzzle_contour is None:
         raise Exception("HEY! THIS IS WRONG, could not find puzzle contour")
 
-    if debug: 
-        output = image.copy()
-        cv2.drawContours(output, [puzzle_contour], -1, (0, 255, 0), 2)
-        cv2.imshow("puzzle outline", output)
-        cv2.waitKey(0)
+    # if debug: 
+    output = image.copy()
+    cv2.drawContours(output, [puzzle_contour], -1, (0, 255, 0), 2)
+    cv2.imshow("puzzle outline", output)
+    cv2.waitKey(0)
 
     # get the 4pt transform of outline contour
     puzzle = four_point_transform(image, puzzle_contour.reshape(4, 2))
@@ -61,7 +60,7 @@ def find_puzzle(image, debug=False):
     # return a 2-tuple of puzzle in both RGB and grayscale
     return (puzzle, warped)
 
-def extract_digit(cell, debug=False):
+def extract_digit(cell, debug=True):
     # apply automatic thresh to cell and then clear any connected borders
     thresh = cv2.threshold(cell, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
     thresh = clear_border(thresh)

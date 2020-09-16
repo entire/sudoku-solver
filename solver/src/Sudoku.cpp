@@ -16,8 +16,7 @@ using std::vector;
 namespace Sudoku
 {
 
-void Solver::Solve() {
-    std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
+void Solver::Solve(const std::vector<int>& grid) {
 
     auto game = std::make_shared<Game>(data_.cells);
     // init game with cells
@@ -35,7 +34,7 @@ void Solver::Solve() {
     }
 }
 
-void Solver::InsertValueToCells(std::vector<int>& grid, std::shared_ptr<Game>& game) {
+void Solver::InsertValueToCells(const std::vector<int>& grid, std::shared_ptr<Game>& game) {
     // To start, every square can be any digit; then assign values from the grid.
     bool couldAssign = true;
     for (int i = 0; i < data_.squares.size(); i++) {
@@ -47,7 +46,7 @@ void Solver::InsertValueToCells(std::vector<int>& grid, std::shared_ptr<Game>& g
     }
 }
 
-bool Solver::Assign(std::shared_ptr<Sudoku::Game>& game, std::string& key, int& digit) {
+bool Solver::Assign(std::shared_ptr<Sudoku::Game>& game, std::string key, int digit) {
     Cell& cell = game->cells[key];
     PrintEvent("assigning", 1, digit, cell);
     
@@ -64,14 +63,14 @@ bool Solver::Assign(std::shared_ptr<Sudoku::Game>& game, std::string& key, int& 
     return true;
 }
 
-void Solver::GetAllValuesExcept(std::vector<int>& others, int& to_remove) {
+void Solver::GetAllValuesExcept(std::vector<int>& others, int to_remove) {
     others.erase(
         std::remove_if(others.begin(), others.end(),
         [&](int& s) { return s == to_remove; }),    
     others.end());
 }
 
-void Solver::PrintEvent(const std::string& message, const int& level, const int& digit, Cell& cell) {
+void Solver::PrintEvent(const std::string& message, const int level, const int digit, Cell& cell) {
     std::string tabLevel(level, '\t');
     std::cout << tabLevel << message << ": ";
     std::cout << "cell: " << cell.key << " ";
@@ -83,7 +82,7 @@ void Solver::PrintEvent(const std::string& message, const int& level, const int&
     std::cout << std::endl;
 }
 
-bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string& key, int& digit) {
+bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string key, int digit) {
     // if digit doesn't exist in cell value candidates return 
     Cell& cell = game->cells[key];
     if (!cell.HasCandidate(digit)) {
@@ -212,6 +211,8 @@ bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {
     }
     return solved;
 }
+
+Solver::~Solver() {}
 
 } // namespace Sudoku
 

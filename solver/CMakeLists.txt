@@ -7,10 +7,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 include_directories(include)
+
 add_executable(${PROJECT_NAME}
         src/main.cpp
         src/Sudoku.cpp
         src/Variables.cpp
+        src/Recognizer.cpp
         )
 target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS} )
 
