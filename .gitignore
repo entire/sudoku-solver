@@ -3,4 +3,4 @@
 **/build
 .vscode
 cmake-build-debug
-**/.pyc
+**/*.pyc

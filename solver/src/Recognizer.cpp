@@ -10,9 +10,7 @@
 
 namespace Sudoku {
 
-Recognizer::Recognizer() {
-//    _debug = false;
-}
+Recognizer::Recognizer() {}
 
 Recognizer::~Recognizer() {}
 
@@ -31,7 +29,7 @@ void Recognizer::Setup() {
     cv::Mat resizeImg, gray, blurred, thresh, bitwiseNot;
     cv::resize(image, resizeImg, cv::Size(), 0.75, 0.75);
     cv::cvtColor(resizeImg, gray, cv::COLOR_BGR2GRAY);
-    cv::GaussianBlur(gray, blurred, cv::Size(7,7), 3);
+    cv::GaussianBlur(gray, blurred, cv::Size(7, 7), 3);
     cv::adaptiveThreshold(blurred, thresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 2.0);
     cv::bitwise_not(thresh, bitwiseNot);
 
@@ -44,18 +42,23 @@ void Recognizer::Setup() {
 
     // sort contour areas
     std::sort(contours.begin(), contours.end(),
-            [](std::vector<cv::Point> contour1, std::vector<cv::Point> contour2) {
-                double i = fabs(contourArea(cv::Mat(contour1)));
-                double j = fabs(contourArea(cv::Mat(contour2)));
-                return (i < j);
-            });
+              [](std::vector<cv::Point> contour1, std::vector<cv::Point> contour2) {
+                  double i = fabs(contourArea(cv::Mat(contour1)));
+                  double j = fabs(contourArea(cv::Mat(contour2)));
+                  return (i < j);
+              });
 
     // then get the largest contour
-    getLargestContourFromContours(contours, largest_contour);
+    GetLargestContourFromContours(contours, largest_contour);
+
+//    cv::Mat adjusted;
+//    FourPointTransform(largest_contour, resizeImg, adjusted);
+//    cv::Mat transform_matrix = cv::getPerspectiveTransform(resizeImg, largest_contour);
+//    cv::warpPerspective(resizeImg, transform_matrix, resizeImg.size
 
     // draw contour
     if (_debug) {
-        cv::Scalar color( 255, 255, 0 );
+        cv::Scalar color(255, 255, 0);
         cv::drawContours(
                 resizeImg,
                 std::vector<std::vector<cv::Point>>{largest_contour},
@@ -66,9 +69,21 @@ void Recognizer::Setup() {
         cv::imshow("display window", resizeImg);
         cv::waitKey(0);
     }
+
+
+}
+void Recognizer::FourPointTransform(std::vector<cv::Point>& contour, cv::Mat& original, cv::Mat& adjusted) {
+//# Locate points of the documents or object which you want to transform
+//    pts1 = np.float32([[0, 260], [640, 260], [0, 400], [640, 400]])
+//    pts2 = np.float32([[0, 0], [400, 0], [0, 640], [400, 640]])
+//
+//# Apply Perspective Transform Algorithm
+//    matrix = cv2.getPerspectiveTransform(pts1, pts2)
+//    result = cv2.warpPerspective(frame, matrix, (500, 600))
+//# Wrap the transformed image
 }
 
-void Recognizer::getLargestContourFromContours(std::vector<std::vector<cv::Point>>& contours, std::vector<cv::Point>& largest_contour) {
+void Recognizer::GetLargestContourFromContours(std::vector<std::vector<cv::Point>>& contours, std::vector<cv::Point>& largest_contour) {
     std::vector<cv::Point> c_approx;
     int largest_area = 0;
 
@@ -89,4 +104,4 @@ void Recognizer::getLargestContourFromContours(std::vector<std::vector<cv::Point
 
 }
 
-}
+} // namespace Sudoku

@@ -17,7 +17,8 @@ public:
     Recognizer(const Recognizer&) = delete;
     ~Recognizer();
     void Setup();
-    void getLargestContourFromContours(std::vector<std::vector<cv::Point>>& contours, std::vector<cv::Point>& largest_contour);
+    void GetLargestContourFromContours(std::vector<std::vector<cv::Point>>& contours, std::vector<cv::Point>& largest_contour);
+    void FourPointTransform(std::vector<cv::Point>& contour, cv::Mat& original, cv::Mat& adjusted);
     void SetDebugMode(bool isOn) { _debug = isOn; };
 };
 
