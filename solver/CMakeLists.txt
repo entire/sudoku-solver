@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14.0)
 set(PROJECT_NAME sudoku)
 project(${PROJECT_NAME})
-find_package( OpenCV REQUIRED )
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -14,6 +13,7 @@ add_executable(${PROJECT_NAME}
         src/Variables.cpp
         src/Recognizer.cpp
         )
+find_package( OpenCV REQUIRED )
 target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS} )
 
 enable_testing()

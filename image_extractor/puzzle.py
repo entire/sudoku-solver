@@ -38,6 +38,7 @@ def find_puzzle(image, debug=True):
         if len (approx) == 4:
             print("YUP LOOKS LIKE IT")
             puzzle_contour = approx
+            print(puzzle_contour)
             break
     
     if puzzle_contour is None:
