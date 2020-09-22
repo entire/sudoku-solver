@@ -83,8 +83,9 @@ void Recognizer::Setup() {
             // get individual cell contours
             std::vector<std::vector<cv::Point>> cell_contours;
             cv::findContours(borderless_cell, cell_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-            std::cout << cell_contours.size() << std::endl;
-            cv::imshow(name, borderless_cell);
+            if (_debug) {
+                cv::imshow(name, borderless_cell);
+            }
 
             int max_area = 0;
             int cell_contour_index = 0;
@@ -100,10 +101,10 @@ void Recognizer::Setup() {
         }
     }
 
-   cv::imshow("adjusted", adjusted);
-
     // draw contour
     if (_debug) {
+        cv::imshow("adjusted", adjusted);
+
         cv::Scalar color(255, 255, 0);
         cv::drawContours(
                 resizeImg,
@@ -170,6 +171,10 @@ void Recognizer::GetLargestContourFromContours(std::vector<std::vector<cv::Point
             }
         }
     }
+}
+
+std::vector<int> Recognizer::GetGrid() {
+    return _grid;
 }
 
 } // namespace Sudoku

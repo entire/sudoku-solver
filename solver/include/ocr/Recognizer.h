@@ -10,8 +10,9 @@ namespace Sudoku {
 class Recognizer
 {
 private:
-    // debug mode shows lots of intermediary steps,
+    // debug mode shows lots of intermediary steps
     bool _debug = false;
+    std::vector<int> _grid;
 public:
     Recognizer();
     Recognizer(const Recognizer&) = delete;
@@ -20,7 +21,9 @@ public:
     void GetLargestContourFromContours(std::vector<std::vector<cv::Point>>& contours, std::vector<cv::Point>& largest_contour);
     void FourPointTransform(std::vector<cv::Point>& contour, cv::Mat& original, cv::Mat& adjusted);
     void SetDebugMode(bool isOn) { _debug = isOn; };
+    std::vector<int> GetGrid();
 };
+
 
 } // namespace Sudoku
 
