@@ -11,6 +11,11 @@
 #include <sudoku/Variables.h>
 namespace Sudoku {
 
+/** 
+ * \enum GameState
+ * This tracks the state of where the sudoku game is.
+ */
+
 enum class GameState {
   uninitialized,
   inprogress,
@@ -18,17 +23,26 @@ enum class GameState {
   complete
 };
 
+
+/**
+ *  \struct Game
+ *  \brief This is the default game that is tracked and used to see if we can solve it or not
+ */
 struct Game {
 public:
     Game() = default;
     Game(std::shared_ptr<Game>& g) : cells(g->cells) {}
     Game(const std::unordered_map<std::string, Cell> cells) : cells(cells) {}
-    // this contains all the cells for the game that it's currently running
+    // \brief this contains all the cells for the game that it's currently running
     std::unordered_map<std::string, Cell> cells;
     // current game state
-    GameState state = GameState::inprogress;
+    GameState state = GameState::uninitialized;
 };
 
+/**
+ *  \class Solver
+ *  \brief This is the class that handles the constraint propagation and search algorithm
+ */
 class Solver {
 private:
     std::vector<std::vector<int>> matrix_;
@@ -47,8 +61,8 @@ public:
     static void GetAllValuesExcept(std::vector<int>& others, int to_remove);
     // convenience function for debugging
     static void PrintEvent(const std::string& message, const int level, const int digit, Cell& cell);
-    // setup function
-    void InsertValueToCells(const std::vector<int>& grid, std::shared_ptr<Game>& game);
+    // setup function to insert cells and setup a Game 
+    bool SetupGameWithGrid(const std::vector<int>& grid, std::shared_ptr<Game>& game);
     // assign a value to a grid at square
     bool Assign(std::shared_ptr<Game>& game, std::string key, int digit);
     // eliminate a value from a grid at square 

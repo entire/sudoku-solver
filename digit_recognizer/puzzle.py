@@ -44,7 +44,7 @@ def find_puzzle(image, debug=True):
     if puzzle_contour is None:
         raise Exception("HEY! THIS IS WRONG, could not find puzzle contour")
 
-    # if debug: 
+    # if we're in debug mode let's show the image
     output = image.copy()
     cv2.drawContours(output, [puzzle_contour], -1, (0, 255, 0), 2)
     cv2.imshow("puzzle outline", output)

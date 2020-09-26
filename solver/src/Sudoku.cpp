@@ -20,7 +20,10 @@ void Solver::Solve(const std::vector<int>& grid) {
 
     auto game = std::make_shared<Game>(data_.cells);
     // init game with cells
-    InsertValueToCells(grid, game);
+    bool success = SetupGameWithGrid(grid, game);
+    if (!success) {
+        std::cout << "could not setup game! please check your grid." << std::endl;
+    }
      
     // search all cells, returns solved solution
     std::shared_ptr<Game> finished = Search(game);
@@ -34,29 +37,30 @@ void Solver::Solve(const std::vector<int>& grid) {
     }
 }
 
-void Solver::InsertValueToCells(const std::vector<int>& grid, std::shared_ptr<Game>& game) {
+bool Solver::SetupGameWithGrid(const std::vector<int>& grid, std::shared_ptr<Game>& game) {
     // To start, every square can be any digit; then assign values from the grid.
-    bool couldAssign = true;
+    bool success = true;
     for (int i = 0; i < data_.squares.size(); i++) {
         if (grid[i] != 0) {
             if (!Assign(game, data_.squares[i], grid[i])) {
-                couldAssign = false;
+                success = false;
             }
         }
     }
+    return success;
 }
 
 bool Solver::Assign(std::shared_ptr<Sudoku::Game>& game, std::string key, int digit) {
     Cell& cell = game->cells[key];
     PrintEvent("assigning", 1, digit, cell);
     
-    // get all values besides candidate
-    std::vector<int> other_values = cell.candidates;
-    GetAllValuesExcept(other_values, digit);
+    // get all values besides possible candidates that work with that cell
+    GetAllValuesExcept(cell.candidates, digit);
 
     // Eliminate all other values that aren't the assign value from candidate
-    for (auto& other : other_values) {
-        if (!Eliminate(game, key, other)) {
+    for (auto& candidate : cell.candidates) {
+        // we're asking if this 
+        if (!Eliminate(game, key, candidate)) {
             return false;
         }
     } 

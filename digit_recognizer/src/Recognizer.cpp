@@ -7,7 +7,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "ocr/Recognizer.h"
+#include "recognizer/Recognizer.h"
+
+#include <cppflow/ops.h>
+#include <cppflow/model.h>
 
 namespace Sudoku {
 
@@ -17,7 +20,11 @@ Recognizer::~Recognizer() {}
 
 void Recognizer::Setup() {
     cv::Mat image;
-    image = cv::imread("../../digit_classifier/assets/puzzle.jpg");
+    // std::string image_name = "../assets/test_cell.jpg";
+    // auto input = cppflow::decode_jpeg(cppflow::read_file(image_name));
+    cppflow::model model("../../digit_classifier/models/model.pb");
+
+    image = cv::imread("../digit_recognizer/assets/puzzle.jpg");
 
     if (!image.data) {
         std::cout << "could not open image" << std::endl;
@@ -29,19 +36,25 @@ void Recognizer::Setup() {
     // resize image
     cv::Mat resizeImg, gray, blurred, thresh, bitwiseNot, adjusted;
     cv::resize(image, resizeImg, cv::Size(), 0.75, 0.75);
+    // then make it into grayscale
     cv::cvtColor(resizeImg, gray, cv::COLOR_BGR2GRAY);
+    // then add a gaussian blur
     cv::GaussianBlur(gray, blurred, cv::Size(7, 7), 3);
+    // then do som ebinary adaptive thresholding
     cv::adaptiveThreshold(blurred, thresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 2.0);
+    // then get the bitwise not
     cv::bitwise_not(thresh, bitwiseNot);
 
     // setup for getting contours & largest contours
     std::vector<std::vector<cv::Point>> contours;
+    // this is going to be our number that we are loooking for in the cell
+    // if this returns empty its size is going to be 0
     std::vector<cv::Point> largest_contour;
 
-    // get contours first
+    // start with finding all the contours within the Mat
     cv::findContours(bitwiseNot, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
-    // sort contour areas
+    // sort contour areas by contour area size
     std::sort(contours.begin(), contours.end(),
               [](std::vector<cv::Point> contour1, std::vector<cv::Point> contour2) {
                   double i = fabs(contourArea(cv::Mat(contour1)));
@@ -57,6 +70,8 @@ void Recognizer::Setup() {
 
     // get ready to separate out the cell
     std::vector<int> nums {1,2,3,4,5,6,7,8,9};
+    // you need to cast to double here because the adjusted.size().width and height are a double
+    // if you return an int, the ROI will be a bit smaller, and inaccurate
     double width = (double)adjusted.size().width / nums.size();
     double height = (double)adjusted.size().height / nums.size();
     double start_x = 0.0;
@@ -64,19 +79,27 @@ void Recognizer::Setup() {
 
     for (auto& i : nums) {
         for (auto &j : nums) {
+
+            // the starting x and y for the cell
             start_x = double(width*(i-1));
             start_y = double(height*(j-1));
 
-            // get just the cell
+            // get just the cell's region of interest
             cv::Rect cellROI(start_x, start_y, width, height);
+            // crop it
             cv::Mat cropped = adjusted(cellROI);
+            // lets get a name that is unique while we loop over so the image will show properly during imshow
             std::string name = "adjusted" + std::to_string(i) + std::to_string(j);
+            // setup mats that we'll need
             cv::Mat thresh_cell, gray_cell, resize_cell;
+            // make it into grascale 
             cv::cvtColor(cropped, gray_cell, cv::COLOR_BGR2GRAY);
+            // put an Otsu Binarization threshold on it (https://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html)
             cv::threshold(gray_cell, thresh_cell, 0,255, cv::THRESH_BINARY_INV+cv::THRESH_OTSU);
 
-            // get rid of border around the image
+            // then we're gonna setup the padding of how much of the border we want to get rid of
             int padding = thresh_cell.size().width * 0.12;
+            // then remove the border
             cv::Rect removeBordersROI(padding, padding, thresh_cell.cols-(padding*2), thresh_cell.rows-(padding*2));
             cv::Mat borderless_cell = thresh_cell(removeBordersROI);
 
@@ -84,7 +107,9 @@ void Recognizer::Setup() {
             std::vector<std::vector<cv::Point>> cell_contours;
             cv::findContours(borderless_cell, cell_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
             if (_debug) {
-                cv::imshow(name, borderless_cell);
+                // cv::imshow(name, borderless_cell);
+                std::string save_name = name + ".jpg";
+                cv::imwrite(save_name, borderless_cell); 
             }
 
             int max_area = 0;
@@ -129,34 +154,41 @@ void Recognizer::FourPointTransform(std::vector<cv::Point>& contour, cv::Mat& or
     cv::Point2f pts[4];
     box.points(pts);
 
-    cv::Point2f src_vertices[4];
-    src_vertices[0] = contour[0];
-    src_vertices[1] = contour[1];
-    src_vertices[2] = contour[2];
-    src_vertices[3] = contour[3];
+    // get all 4  points of the starting verticies
+    // remember: this order is important!!
+    cv::Point2f src_matrix[4];
+    src_matrix[0] = contour[0];
+    src_matrix[1] = contour[1];
+    src_matrix[2] = contour[2];
+    src_matrix[3] = contour[3];
 
     // just use width of box side for all sides so that warped mat turns into a square
     float boxSide = box.boundingRect2f().width;
 
-    cv::Point2f dst_vertices[4];
+    // setup the destination matrix
+    cv::Point2f dst_matrix[4];
     // bottom left
-    dst_vertices[0] = cv::Point(boxSide, boxSide);
+    dst_matrix[0] = cv::Point(boxSide, boxSide);
     // bottom right
-    dst_vertices[1] = cv::Point(0, boxSide);
+    dst_matrix[1] = cv::Point(0, boxSide);
     // top left
-    dst_vertices[2] = cv::Point(0, 0);
+    dst_matrix[2] = cv::Point(0, 0);
     // top right
-    dst_vertices[3] = cv::Point(boxSide, 0);
+    dst_matrix[3] = cv::Point(boxSide, 0);
 
-    cv::Mat warp;
-    warp = cv::getPerspectiveTransform(src_vertices, dst_vertices);
-    cv::warpPerspective(original, adjusted, warp, cv::Size(boxSide, boxSide), cv::INTER_LINEAR, cv::BORDER_CONSTANT);
+    cv::Mat transformMatrix;
+    // get a transform matrix for doing the linear transformation 
+    // to go from the source matrix -> the destination matrix
+    transformMatrix = cv::getPerspectiveTransform(src_matrix, dst_matrix);
+    // apply the transform
+    cv::warpPerspective(original, adjusted, transformMatrix, cv::Size(boxSide, boxSide), cv::INTER_LINEAR, cv::BORDER_CONSTANT);
 }
 
 void Recognizer::GetLargestContourFromContours(std::vector<std::vector<cv::Point>>& contours, std::vector<cv::Point>& largest_contour) {
     std::vector<cv::Point> c_approx;
     int largest_area = 0;
 
+    // go through each point in the contour
     for (auto& c : contours) {
         double perimeter = cv::arcLength(c, true);
         double epsilon = 0.02 * perimeter;

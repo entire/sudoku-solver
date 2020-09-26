@@ -5,7 +5,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include "sudoku/Sudoku.h"
-#include "ocr/Recognizer.h"
+#include "recognizer/Recognizer.h"
 
 void StartVideo();
 
