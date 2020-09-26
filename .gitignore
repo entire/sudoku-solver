@@ -3,4 +3,6 @@
 **/build
 .vscode
 cmake-build-debug
-**/*.pyc
+*.pyc
+__pycache__
+*.so
