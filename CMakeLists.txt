@@ -4,6 +4,7 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 include_directories(solver/include)
 include_directories(digit_recognizer/include)
@@ -15,13 +16,13 @@ add_executable(${PROJECT_NAME}
         digit_recognizer/src/Recognizer.cpp
         )
 
+        # pytorch
+find_package(Torch REQUIRED)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
+
 # opencv
 find_package( OpenCV REQUIRED )
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} )
-
-# tensorflow
-find_library(TENSORFLOW_LIB tensorflow HINT lib/libtensorflow2/lib)
-target_link_libraries (${PROJECT_NAME} "${TENSORFLOW_LIB}")
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${TORCH_LIBRARIES})
 
 # googletest
 enable_testing()

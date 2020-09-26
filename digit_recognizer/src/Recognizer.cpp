@@ -9,8 +9,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "recognizer/Recognizer.h"
 
-#include <cppflow/ops.h>
-#include <cppflow/model.h>
+#include <torch/torch.h>
 
 namespace Sudoku {
 
@@ -21,11 +20,11 @@ Recognizer::~Recognizer() {}
 void Recognizer::Setup() {
     cv::Mat image;
     // std::string image_name = "../assets/test_cell.jpg";
-    // auto input = cppflow::decode_jpeg(cppflow::read_file(image_name));
-    cppflow::model model("../../digit_classifier/models/model.pb");
 
     image = cv::imread("../digit_recognizer/assets/puzzle.jpg");
-
+    torch::Tensor tensor = torch::rand({2, 3});
+    std::cout << tensor << std::endl;
+    
     if (!image.data) {
         std::cout << "could not open image" << std::endl;
         return;
