@@ -10,6 +10,7 @@
 #include "recognizer/Recognizer.h"
 
 #include <torch/torch.h>
+#include <torch/script.h>
 
 namespace Sudoku {
 
@@ -19,12 +20,26 @@ Recognizer::~Recognizer() {}
 
 void Recognizer::Setup() {
     cv::Mat image;
-    // std::string image_name = "../assets/test_cell.jpg";
+    std::string image_name = "../assets/test_cell.jpg";
+    cv::Mat cell_image = cv::imread("../digit_recognizer/assets/test_cell1.jpg");
+
+    // load pytorch model
+    torch::jit::script::Module module;
+    module = torch::jit::load("../digit_classifier/models/converted_model.pt");
+
+    at::Tensor tensor_image = torch::from_blob(cell_image.data, {1, 3, cell_image.rows, cell_image.cols}, at::kByte);
+    tensor_image = tensor_image.to(at::kFloat);
+    // std::cout << tensor_image.slice(2,0,1) << std::endl;
+
+    // Create a vector of inputs.
+    std::vector<torch::jit::IValue> inputs;
+    inputs.emplace_back(tensor_image);
+
+    auto out_tensor = module.forward(inputs);
+    std::cout << out_tensor << '\n';
 
     image = cv::imread("../digit_recognizer/assets/puzzle.jpg");
-    torch::Tensor tensor = torch::rand({2, 3});
-    std::cout << tensor << std::endl;
-    
+
     if (!image.data) {
         std::cout << "could not open image" << std::endl;
         return;

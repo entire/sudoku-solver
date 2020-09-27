@@ -16,9 +16,9 @@ add_executable(${PROJECT_NAME}
         digit_recognizer/src/Recognizer.cpp
         )
 
-        # pytorch
+# pytorch
 find_package(Torch REQUIRED)
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 # opencv
 find_package( OpenCV REQUIRED )

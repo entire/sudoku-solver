@@ -4,4 +4,6 @@
 .vscode
 cmake-build-debug
 *.pyc
+**/.ipynb_checkpoints
+
 __pycache__
