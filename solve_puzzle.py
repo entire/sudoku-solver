@@ -66,9 +66,13 @@ for y in range(0, 9):
 			# resize the cell to 28x28 pixels and then prepare the
 			# cell for classification
 			roi = cv2.resize(digit, (28, 28))
+			print(roi)
 			roi = roi.astype("float") / 255.0
 			roi = img_to_array(roi)
+			print(roi)
+			print(roi)
 			roi = np.expand_dims(roi, axis=0)
+			print(roi)
 			# classify the digit and update the Sudoku board with the
 			# prediction
 			pred = model.predict(roi).argmax(axis=1)[0]

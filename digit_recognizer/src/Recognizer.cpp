@@ -20,23 +20,33 @@ Recognizer::~Recognizer() {}
 
 void Recognizer::Setup() {
     cv::Mat image;
-    std::string image_name = "../assets/test_cell.jpg";
-    cv::Mat cell_image = cv::imread("../digit_recognizer/assets/test_cell1.jpg");
+    std::string image_name = "../digit_recognizer/assets/test_cell2.jpg";
+    cv::Mat cell_image = cv::imread(image_name);
+    cv::imshow("cell", cell_image);
 
     // load pytorch model
-    torch::jit::script::Module module;
-    module = torch::jit::load("../digit_classifier/models/converted_model.pt");
+    torch::jit::script::Module module = torch::jit::load("../digit_classifier/models/converted_model.pt");
+    module.eval();
 
-    at::Tensor tensor_image = torch::from_blob(cell_image.data, {1, 3, cell_image.rows, cell_image.cols}, at::kByte);
+    cv::Mat cellResizeMat, grayImg, tgtImg;
+    cv::resize(cell_image, cellResizeMat, cv::Size(28,28));
+    cv::cvtColor(cellResizeMat, grayImg, cv::COLOR_BGR2GRAY);
+    // grayImg.convertTo(tgtImg, CV_32F, 1.0 / 255.0, 0);
+    tgtImg = grayImg;
+
+    auto tensor_image = torch::from_blob(tgtImg.data, {tgtImg.rows, tgtImg.cols, tgtImg.channels()}, at::kByte);
     tensor_image = tensor_image.to(at::kFloat);
-    // std::cout << tensor_image.slice(2,0,1) << std::endl;
+    tensor_image = tensor_image.permute({ 2,1,0 });
+    tensor_image.unsqueeze_(0);
 
     // Create a vector of inputs.
     std::vector<torch::jit::IValue> inputs;
     inputs.emplace_back(tensor_image);
-
-    auto out_tensor = module.forward(inputs);
-    std::cout << out_tensor << '\n';
+    std::cout << "forward" << std::endl;
+    torch::Tensor output = module.forward(inputs).toTensor();
+    // std::cout << "output: " << output.slice(/*dim=*/1, /*start=*/0, /*end=*/10) << std::endl;
+    std::cout << "output: " << output.slice(/*dim=*/1, /*start=*/0, /*end=*/10) << std::endl;
+    std::cout << output.argmax(1) << " " << std::endl;
 
     image = cv::imread("../digit_recognizer/assets/puzzle.jpg");
 
@@ -89,7 +99,7 @@ void Recognizer::Setup() {
     double width = (double)adjusted.size().width / nums.size();
     double height = (double)adjusted.size().height / nums.size();
     double start_x = 0.0;
-    double start_y = 0.0;
+    double start_y = 0.0;    
 
     for (auto& i : nums) {
         for (auto &j : nums) {
@@ -136,6 +146,8 @@ void Recognizer::Setup() {
                     cell_contour_index = j;
                 }
             }
+
+
 
         }
     }

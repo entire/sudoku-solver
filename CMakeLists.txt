@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
         solver/src/Sudoku.cpp
         solver/src/Variables.cpp
         digit_recognizer/src/Recognizer.cpp
+        digit_recognizer/src/Inference.cpp
         )
 
 # pytorch
