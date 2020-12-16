@@ -1,5 +1,3 @@
-#include <sudoku/Sudoku.h>
-#include <sudoku/Variables.h>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -7,6 +5,8 @@
 #include <unordered_map>
 #include <set>
 #include <memory>
+#include "solver/sudoku.h"
+#include "solver/variables.h"
 
 using std::cout;
 using std::endl;

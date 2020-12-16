@@ -1,10 +1,10 @@
-#include <sudoku/Variables.h>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
 #include <set>
+#include "solver/variables.h"
 
 namespace Sudoku
 {

@@ -74,7 +74,6 @@ public:
     }
 };
 
-
 struct Variables {
 public:
     std::vector<int> digits = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -98,7 +97,6 @@ public:
     // destructor
     ~Variables() = default;
 };
-
 
 } // namespace Sudoku
 

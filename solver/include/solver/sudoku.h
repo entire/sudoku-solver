@@ -1,5 +1,5 @@
-#ifndef SUDOKU_SOLVER_H
-#define SUDOKU_SOLVER_H
+#ifndef SOLVER_SUDOKU_H
+#define SOLVER_SUDOKU_H
 
 #include <vector>
 #include <string>
@@ -8,7 +8,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
-#include <sudoku/Variables.h>
+#include <solver/variables.h>
+
 namespace Sudoku {
 
 /** 
@@ -78,4 +79,4 @@ public:
 
 
 }
-#endif /* SUDOKU_SOLVER_H */
+#endif /* SOLVER_SUDOKU_H */

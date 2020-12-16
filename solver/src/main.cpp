@@ -4,8 +4,8 @@
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include "sudoku/Sudoku.h"
-#include "recognizer/Recognizer.h"
+#include "solver/sudoku.h"
+#include "recognizer/recognizer.h"
 
 void StartVideo();
 

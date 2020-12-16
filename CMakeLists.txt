@@ -11,10 +11,10 @@ include_directories(digit_recognizer/include)
 
 add_executable(${PROJECT_NAME}
         solver/src/main.cpp
-        solver/src/Sudoku.cpp
-        solver/src/Variables.cpp
-        digit_recognizer/src/Recognizer.cpp
-        digit_recognizer/src/Inference.cpp
+        solver/src/sudoku.cpp
+        solver/src/variables.cpp
+        digit_recognizer/src/recognizer.cpp
+        digit_recognizer/src/inference.cpp
         )
 
 # pytorch
@@ -29,6 +29,6 @@ target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${TORCH_LIBRARIES})
 enable_testing()
 find_package(GTest REQUIRED)
 add_executable(sudoku_tests 
-        solver/test/SudokuTest.cpp
+        solver/test/sudoku_test.cpp
         )
 target_link_libraries(sudoku_tests GTest::GTest GTest::Main)

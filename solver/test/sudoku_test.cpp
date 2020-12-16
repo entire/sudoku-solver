@@ -1,6 +1,6 @@
 // tests.cpp
-#include "../src/Sudoku.cpp"
-#include "../src/Variables.cpp"
+#include "../src/sudoku.cpp"
+#include "../src/variables.cpp"
 #include <gtest/gtest.h>
 
 std::vector<std::vector<int>> unsolved_matrix {
