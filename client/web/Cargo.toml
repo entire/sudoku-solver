@@ -1,0 +1,11 @@
+[package]
+name = "sudoku-solver"
+version = "0.1.0"
+edition = "2018"
+description = "use AR to solve sudoku by showing it a picture"
+readme = "README.md"
+
+[dependencies]
+yew = "0.17"
+log = "0.4.13"
+wasm-logger = "0.2.0"
