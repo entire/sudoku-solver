@@ -3,7 +3,6 @@
 
 ## Requirements for `digit_classifier`
 - Tensorflow 2.3.0 
-- Keras 2.3.1
 - scikit-learn 0.23.1
 - Jupyter Notebook
 
