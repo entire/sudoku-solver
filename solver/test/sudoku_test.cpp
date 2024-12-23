@@ -1,6 +1,7 @@
 // tests.cpp
 #include "../src/sudoku.cpp"
 #include "../src/variables.cpp"
+#include "../include/solver/sudoku.h"
 #include <gtest/gtest.h>
 
 std::vector<std::vector<int>> unsolved_matrix {
@@ -30,4 +31,14 @@ int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
+}
+
+TEST(SudokuSolverTest, SolveSudoku) {
+    Sudoku::Solver solver;
+    std::vector<int> flattened_matrix;
+    for (const auto& row : unsolved_matrix) {
+        flattened_matrix.insert(flattened_matrix.end(), row.begin(), row.end());
+    }
+    std::vector<int> solution = solver.Solve(flattened_matrix);
+    ASSERT_EQ(solution.size(), 81);
 }

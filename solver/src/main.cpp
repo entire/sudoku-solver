@@ -5,23 +5,22 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include "solver/sudoku.h"
-#include "recognizer/recognizer.h"
+#include "recognizer/recognizer.hpp"
 
 void StartVideo();
 
 int main() {
-
     // recognizer
     Sudoku::Recognizer recognizer;
-    recognizer.SetDebugMode(true);
+    // recognizer.SetDebugMode(true);
     recognizer.Setup();
 
-    // digit classifier
+    // Get the grid from recognizer
+    std::vector<int> grid = recognizer.GetGrid();
 
-    // main solver
-//    std::vector<int> grid = { 4, 0, 0, 0, 0, 0, 8, 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 7, 0, 5, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 4, 0, 0, 0, 0, 0, 0 };
-//    Sudoku::Solver solver;
-//    solver.Solve(grid);
+    // Create and run solver with the recognized grid
+    Sudoku::Solver solver;
+    solver.Solve(grid);
 
     return 0;
 }

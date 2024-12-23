@@ -16,25 +16,26 @@ using std::vector;
 namespace Sudoku
 {
 
-void Solver::Solve(const std::vector<int>& grid) {
-
+std::vector<int> Solver::Solve(const std::vector<int>& grid) {
     auto game = std::make_shared<Game>(data_.cells);
     // init game with cells
     bool success = SetupGameWithGrid(grid, game);
     if (!success) {
         std::cout << "could not setup game! please check your grid." << std::endl;
+        return grid; // Return original grid if setup fails
     }
      
     // search all cells, returns solved solution
     std::shared_ptr<Game> finished = Search(game);
 
+    // Convert the solution back to vector<int> format
+    std::vector<int> solution(81);
+    int i = 0;
     for (auto& sq : data_.squares) {
-        // finished->cells[sq].PrintPeers();
-        // finished->cells[sq].PrintCandidtes();
-        // finished->cells[sq].PrintValue();
-        // finished->cells[sq].PrintUnits();
-        // std::cout << === << std::endl;
+        solution[i++] = finished->cells[sq].candidates[0]; // Get the single remaining candidate
     }
+    
+    return solution;
 }
 
 bool Solver::SetupGameWithGrid(const std::vector<int>& grid, std::shared_ptr<Game>& game) {
@@ -134,17 +135,13 @@ bool Solver::Eliminate(std::shared_ptr<Game>& game, std::string key, int digit) 
 }
 
 std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
-    // check if puzzle is solved
     if (isSolved(game->cells)) {
         game->state = GameState::complete;
-        std::cout << "solved!" << std::endl;
-        return std::move(game);
+        return game;
     }
 
-    // check if GameState is failed
-    if (game->state == GameState::failed) { 
-        std::cout << "search returned false! 1" << std::endl;
-        return std::move(game);
+    if (game->state == GameState::failed) {
+        return game;
     }
 
     // get unordered_map with key of sq and value of cell candidate size
@@ -176,33 +173,20 @@ std::shared_ptr<Game> Solver::Search(std::shared_ptr<Game>& game) {
     // then get the key of square w/ smallest candidate.size()
     std::string min_cand_key = res[0];
 
-    // search for a non-failing solution and keep the results to see if they failed
-    std::vector<std::shared_ptr<Game>> search_results;
+    // Try each value for the selected variable
     for (auto& p : game->cells[min_cand_key].candidates) {
-        // make a copy of shared_ptr to see if this possible value will work out
-        // without polluting our base `game` ptr
         auto game_to_test = std::make_shared<Game>(game);
-        // check if it fails to assign / eliminate properly
-        if (!Assign(game_to_test, min_cand_key, p)) {
-            game_to_test->state = GameState::failed;
+        if (Assign(game_to_test, min_cand_key, p)) {
+            auto result = Search(game_to_test);
+            if (result->state != GameState::failed) {
+                return result;  // Return immediately if we found a solution
+            }
         }
-        search_results.push_back(std::move(Search(game_to_test)));
     }
 
-    // iterate through search results (i.e. possible games)
-    for (auto search_result : search_results) {
-        if (search_result->state == GameState::failed) { // search
-            std::cout << "it failed" << std::endl;
-        } else {
-            std::cout << "it worked" << std::endl;
-            // run it one more time to check to see if the puzzle is solved yet
-            return std::move(Search(search_result));
-        }
-    }
-    // since there are more possible wrong configurations, wait to see if iterating through
-    // search results produced any good results, if not just returned the first one in the
-    // search_results which will have a GameStats::failed
-    return std::move(search_results[0]);
+    // If we get here, no solution was found
+    game->state = GameState::failed;
+    return game;
 }
 
 bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {

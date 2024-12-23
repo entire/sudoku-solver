@@ -14,9 +14,10 @@ class Inference
 {
 private:
     /* data */
-    torch::jit::script::Module _module;
+    torch::jit::Module _module;
+    bool _debug = false;
 public:
-    Inference(/* args */);
+    Inference(bool debug = false);
     ~Inference();
 
     void Setup();

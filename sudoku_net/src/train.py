@@ -74,7 +74,15 @@ def train_model():
     os.makedirs("../models", exist_ok=True)
     
     logger.info("Training completed. Saving model...")
-    torch.save(model.state_dict(), "../models/sudokunet.pth")
+    # Save model weights (optional, for Python reloading)
+    torch.save(model.state_dict(), "../models/sudokunet_weights.pth")
+    
+    # Save TorchScript model for C++ inference
+    model.eval()  # Switch to evaluation mode
+    example_input = torch.randn(1, 1, 28, 28).to(device)  # Adjust size to match your input
+    traced_model = torch.jit.trace(model, example_input)
+    torch.jit.save(traced_model, "../models/sudokunet.pth")
+    logger.info("Model saved in TorchScript format")
 
     history = {
         'loss': loss_history,

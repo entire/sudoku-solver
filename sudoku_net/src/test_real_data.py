@@ -25,7 +25,7 @@ def load_and_process_image(image_path):
 def visualize_predictions():
     # Load the trained model
     model = SudokuNet()
-    model.load_state_dict(torch.load('../models/sudokunet.pth', weights_only=True))
+    model.load_state_dict(torch.load('../../models/sudokunet.pth', weights_only=True))
     model.eval()
     
     # Create a figure with subplots

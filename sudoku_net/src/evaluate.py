@@ -12,7 +12,7 @@ def evaluate_model():
 
     # Load model
     model = SudokuNet()
-    model.load_state_dict(torch.load("../models/sudokunet.pth", weights_only=True))
+    model.load_state_dict(torch.load("../../models/sudokunet.pth", weights_only=True))
     model.eval()
 
     logger.info("Starting model evaluation...")

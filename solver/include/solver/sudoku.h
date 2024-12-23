@@ -57,7 +57,7 @@ public:
     // don't generate a copy constructor
     Solver(const Solver&) = delete;
     // entry function to solve the sudoku given grid
-    void Solve(const std::vector<int>& grid);
+    std::vector<int> Solve(const std::vector<int>& grid);
     // get all values except to_remove value from unit
     static void GetAllValuesExcept(std::vector<int>& others, int to_remove);
     // convenience function for debugging

@@ -7,25 +7,74 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "recognizer/recognizer.h"
-#include "recognizer/inference.h"
+#include "recognizer/recognizer.hpp"
+#include "recognizer/inference.hpp"
+#include "recognizer/overlayer.hpp"
+#include "solver/sudoku.h"
 
 namespace Sudoku {
 
-Recognizer::Recognizer() {}
+bool IsValidMove(const std::vector<int>& grid, int pos, int num) {
+    int row = pos / 9;
+    int col = pos % 9;
+    
+    // Check row
+    for (int x = 0; x < 9; x++)
+        if (grid[row * 9 + x] == num) return false;
+    
+    // Check column
+    for (int x = 0; x < 9; x++)
+        if (grid[x * 9 + col] == num) return false;
+    
+    // Check 3x3 box
+    int box_row = row - row % 3;
+    int box_col = col - col % 3;
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (grid[(box_row + i) * 9 + (box_col + j)] == num) return false;
+    
+    return true;
+}
+
+bool SolveSudokuHelper(std::vector<int>& grid, int pos = 0) {
+    if (pos == 81) return true;
+    if (grid[pos] != 0) return SolveSudokuHelper(grid, pos + 1);
+    
+    for (int num = 1; num <= 9; num++) {
+        if (IsValidMove(grid, pos, num)) {
+            grid[pos] = num;
+            if (SolveSudokuHelper(grid, pos + 1)) return true;
+            grid[pos] = 0;
+        }
+    }
+    return false;
+}
+
+std::vector<int> SolveSudoku(const std::vector<int>& input_grid) {
+    std::vector<int> solution = input_grid;
+    SolveSudokuHelper(solution);
+    return solution;
+}
+
+Recognizer::Recognizer() {
+    _grid.reserve(81); // Pre-allocate space for 9x9 grid
+}
 
 Recognizer::~Recognizer() {}
 
 void Recognizer::Setup() {
- 
-    cv::Mat image;    
-    image = cv::imread("../../recognizer/assets/sudoku_12.jpg");
-    std::string filename = "adjusted13_";
-
+    std::cout << "Starting recognition..." << std::endl;
+    cv::Mat image = cv::imread("../recognizer/assets/sudoku_3.jpg");
     if (!image.data) {
-        std::cout << "could not open image" << std::endl;
-        return;
+        throw std::runtime_error("Could not open image file");
     }
+    
+    // Add validation for grid dimensions
+    if (image.rows < 100 || image.cols < 100) {
+        throw std::runtime_error("Image dimensions too small for reliable recognition");
+    }
+    
+    std::string filename = "adjusted13_";
 
     cv::namedWindow("display window", cv::WINDOW_AUTOSIZE);
 
@@ -77,9 +126,13 @@ void Recognizer::Setup() {
     double start_x = 0.0;
     double start_y = 0.0;    
 
-    // setup inference
-    torch::jit::script::Module model = torch::jit::load("../digit_classifier/models/converted_model.pt");
-    model.eval();
+    // setup inference with debug flag
+    Inference inference(_debug);  // Pass debug flag to constructor
+    inference.Setup();
+
+    // Reset grid before starting new recognition
+    _grid.clear();
+    _grid.reserve(81);
 
     for (auto& i : nums) {
         for (auto &j : nums) {
@@ -119,40 +172,43 @@ void Recognizer::Setup() {
             std::vector<std::vector<cv::Point>> cell_contours;
             cv::findContours(last_resize, cell_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
             
-            if (_debug) {
-                std::string save_name = name + ".jpg";
+            // Only accept predictions if there's a significant digit contour
+            double cell_area = cv::countNonZero(last_resize);
+            double total_area = last_resize.rows * last_resize.cols;
+            double fill_ratio = cell_area / total_area;
 
-                // resize image
-                cv::Mat tensor_img = last_resize;
-                auto tensor_image = torch::from_blob(tensor_img.data, {1, 1, tensor_img.rows, tensor_img.cols}, at::kByte);
-                tensor_image = tensor_image.to(at::kFloat);
-
-                // create a vector of inputs
-                std::vector<torch::jit::IValue> inputs;
-                inputs.emplace_back(tensor_image);
-                std::cout << "forward" << std::endl;
-                torch::Tensor output = model.forward(inputs).toTensor();
-                std::cout << "output: " << output.slice(/*dim=*/1, /*start=*/0, /*end=*/10) << std::endl;
-                std::cout << output.argmax(1) << " " << std::endl;
+            // If the cell is mostly empty (less than 5% filled), consider it empty
+            if (fill_ratio < 0.05) {
+                _grid.push_back(0);
+                if (_debug) {
+                    std::cout << "Position (" << i << "," << j << "): Empty cell" << std::endl;
+                }
+                continue;
             }
 
-            int max_area = 0;
-            int cell_contour_index = 0;
+            // Get prediction and add confidence threshold
+            int predicted_digit = inference.GetOutputFromImage(last_resize);
+            
+            // If prediction seems unreliable, mark as empty
+            if (predicted_digit < 1 || predicted_digit > 9) {
+                predicted_digit = 0;
+            }
+            
+            _grid.push_back(predicted_digit);
 
-            for (int j = 0; j < cell_contours.size(); j++) {
-                double new_area = cv::contourArea(cell_contours[j]);
-                if (new_area > max_area) {
-                    max_area = new_area;
-                    cell_contour_index = j;
-                }
+            if (_debug) {
+                std::cout << "Position (" << i << "," << j << "): " << predicted_digit 
+                         << " (fill ratio: " << fill_ratio << ")" << std::endl;
             }
         }
     }
 
+    std::cout << "Grid size after recognition: " << _grid.size() << std::endl;
+
     // draw contour
     if (_debug) {
         std::cout << "line 151" << std::endl;
-        // cv::imshow("adjusted", adjusted);
+        cv::imshow("adjusted", adjusted);
 
         cv::Scalar color(255, 255, 0);
         cv::drawContours(
@@ -170,8 +226,9 @@ void Recognizer::Setup() {
 void Recognizer::FourPointTransform(std::vector<cv::Point>& contour, cv::Mat& original, cv::Mat& adjusted) {
     std::sort(contour.begin(), contour.end(),
               [](cv::Point p1, cv::Point p2) {
-                  if (p1.x < p2.x) { return (p1.x < p2.x); }
-                  if (p1.x > p2.x) { return (p1.x > p2.x); }
+                  if (p1.x < p2.x) return true;
+                  if (p1.x > p2.x) return false;
+                  return p1.y < p2.y;  // If x coordinates are equal, compare y coordinates
               });
 
     // assemble a rotated rectangle out of that info
@@ -231,6 +288,31 @@ void Recognizer::GetLargestContourFromContours(std::vector<std::vector<cv::Point
 }
 
 std::vector<int> Recognizer::GetGrid() {
+    if (_grid.empty()) {
+        throw std::runtime_error("Grid has not been initialized");
+    }
+    if (_grid.size() != 81) {
+        throw std::runtime_error("Invalid grid size: " + std::to_string(_grid.size()));
+    }
+    
+    // Validate all numbers are in range 0-9
+    if (!std::all_of(_grid.begin(), _grid.end(), 
+        [](int n) { return n >= 0 && n <= 9; })) {
+        throw std::runtime_error("Grid contains invalid numbers");
+    }
+
+    // Add validation for initial grid consistency
+    for (int i = 0; i < 81; i++) {
+        if (_grid[i] != 0) {  // Skip empty cells
+            int temp = _grid[i];
+            _grid[i] = 0;  // Temporarily remove number to check if it's valid
+            if (!IsValidMove(_grid, i, temp)) {
+                throw std::runtime_error("Invalid initial grid: conflicting numbers at position " + std::to_string(i));
+            }
+            _grid[i] = temp;  // Restore the number
+        }
+    }
+
     return _grid;
 }
 
