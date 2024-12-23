@@ -57,7 +57,7 @@ public:
     // don't generate a copy constructor
     Solver(const Solver&) = delete;
     // entry function to solve the sudoku given grid
-    void Solve(const std::vector<int>& grid);
+    std::vector<int> Solve(const std::vector<int>& grid);
     // get all values except to_remove value from unit
     static void GetAllValuesExcept(std::vector<int>& others, int to_remove);
     // convenience function for debugging
@@ -72,6 +72,10 @@ public:
     std::shared_ptr<Game> Search(std::shared_ptr<Game>& game);
     // check if series of cells solves the puzzle or not
     static bool isSolved(std::unordered_map<std::string , Cell>& cells);
+    // check if the move is valid
+    bool IsValidMove(const std::vector<int>& grid, int pos, int num);
+    // validate the grid
+    bool ValidateGrid(const std::vector<int>& grid, bool debug = false);
 
     // destructor
     ~Solver();

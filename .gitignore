@@ -7,3 +7,11 @@ cmake-build-debug
 **/.ipynb_checkpoints
 
 __pycache__
+
+# logs
+*.log
+
+# models
+*.pth
+
+.venv/
