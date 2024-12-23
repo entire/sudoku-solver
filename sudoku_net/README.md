@@ -58,6 +58,12 @@ Run the scripts in the following order:
    ```
    This will display a grid of MNIST digits with their labels
 
+4. Test the model on real data:
+   ```bash
+   uv run src/test_real_data.py
+   ```
+   This will load the trained model and show its accuracy on the test set
+
 ## Logs
 All scripts generate logs in the `logs/` directory with the following files:
 - `train.log`: Training progress and loss values

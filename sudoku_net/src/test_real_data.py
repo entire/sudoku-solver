@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 from model import SudokuNet
 import os
 
+# logging
+from utils.logging_config import setup_logger
+
+logger = setup_logger("test_real_data")
+
 def load_and_process_image(image_path):
     # Load and convert to grayscale
     image = Image.open(image_path).convert('L')
@@ -29,7 +34,7 @@ def visualize_predictions():
     
     # Process each test cell
     for i in range(12):
-        image_path = f'../data/real_test_data/test_cell{i+1}.jpg'
+        image_path = f'../data/test_data/test_cell{i+1}.jpg'
         
         # Load and process image
         input_tensor = load_and_process_image(image_path)

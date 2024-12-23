@@ -19,12 +19,7 @@ def setup_logger(name: str) -> logging.Logger:
     file_handler = logging.FileHandler(log_dir / f"{name}.log")
     file_handler.setFormatter(file_formatter)
     
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(console_formatter)
-    
     # Add handlers
     logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
     
     return logger 

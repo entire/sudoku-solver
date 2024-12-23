@@ -19,7 +19,7 @@ Recognizer::~Recognizer() {}
 void Recognizer::Setup() {
  
     cv::Mat image;    
-    image = cv::imread("../digit_recognizer/assets/sudoku_12.jpg");
+    image = cv::imread("../../recognizer/assets/sudoku_12.jpg");
     std::string filename = "adjusted13_";
 
     if (!image.data) {
