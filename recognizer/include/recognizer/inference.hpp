@@ -21,8 +21,11 @@ public:
     ~Inference();
 
     void Setup();
-    int GetOutputFromImage(cv::Mat image);
+    std::pair<int, float> GetOutputWithConfidence(cv::Mat image);
     void PrepImage(cv::Mat &image);
+    void SetDebugMode(bool isOn) {
+        _debug = isOn;
+    }
 };
 
 

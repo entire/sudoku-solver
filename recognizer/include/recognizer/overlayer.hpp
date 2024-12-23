@@ -12,11 +12,13 @@ public:
     ~Overlayer();
 
     // Overlay the recognized digits onto the original image
-    void OverlayAnswers(cv::Mat& image, const std::vector<int>& grid, cv::Scalar color = cv::Scalar(0, 255, 0));
+    void OverlayAnswers(cv::Mat& image, const std::vector<int>& grid, 
+                       const std::vector<int>& original_grid, 
+                       cv::Scalar color = cv::Scalar(0, 255, 0));
 
 private:
     // Helper method to draw a single digit
-    void DrawDigit(cv::Mat& image, int digit, const cv::Point& position, cv::Scalar color = cv::Scalar(0, 255, 0));
+    void DrawDigit(cv::Mat& image, int digit, const cv::Point& position, cv::Scalar color);
     
     // Constants for drawing
     const int CELL_SIZE = 50;  // Will be adjusted based on image size

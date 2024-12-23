@@ -1,27 +1,24 @@
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-def get_mnist_dataset(train=True, batch_size=32):
-    # Define the transformations
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))  # MNIST mean and std
-    ])
-
-    # Load MNIST dataset
+def get_mnist_dataset(train=True, transform=None, batch_size=32):
+    """
+    Get MNIST dataset loader
+    Args:
+        train (bool): If True, returns training dataset, else test dataset
+        transform: Optional transform to be applied to the data
+        batch_size (int): Batch size for the data loader
+    """
     dataset = datasets.MNIST(
-        root='../data', 
+        root='../data',
         train=train,
         download=True,
         transform=transform
     )
-
-    # Create dataloader
-    loader = DataLoader(
+    
+    return DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=train,
+        shuffle=train,  # Shuffle only training data
         num_workers=2
     )
-
-    return loader

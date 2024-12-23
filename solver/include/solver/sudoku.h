@@ -72,6 +72,10 @@ public:
     std::shared_ptr<Game> Search(std::shared_ptr<Game>& game);
     // check if series of cells solves the puzzle or not
     static bool isSolved(std::unordered_map<std::string , Cell>& cells);
+    // check if the move is valid
+    bool IsValidMove(const std::vector<int>& grid, int pos, int num);
+    // validate the grid
+    bool ValidateGrid(const std::vector<int>& grid, bool debug = false);
 
     // destructor
     ~Solver();

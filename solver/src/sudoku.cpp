@@ -200,6 +200,65 @@ bool Solver::isSolved(std::unordered_map<std::string , Cell>& cells) {
     return solved;
 }
 
+bool Solver::ValidateGrid(const std::vector<int>& grid, bool debug) {
+    // Check grid size
+    if (grid.size() != 81) {
+        if (debug) std::cout << "Invalid grid size: " << grid.size() << std::endl;
+        return false;
+    }
+
+    // Check for valid digits (0-9 only)
+    for (int digit : grid) {
+        if (digit < 0 || digit > 9) {
+            if (debug) std::cout << "Invalid digit found: " << digit << std::endl;
+            return false;
+        }
+    }
+
+    // Check rows, columns, and boxes for duplicate numbers
+    for (int i = 0; i < 9; i++) {
+        std::vector<bool> row(10, false);
+        std::vector<bool> col(10, false);
+        std::vector<bool> box(10, false);
+
+        for (int j = 0; j < 9; j++) {
+            // Check row
+            int rowVal = grid[i * 9 + j];
+            if (rowVal != 0) {
+                if (row[rowVal]) {
+                    if (debug) std::cout << "Duplicate " << rowVal << " in row " << i << std::endl;
+                    return false;
+                }
+                row[rowVal] = true;
+            }
+
+            // Check column
+            int colVal = grid[j * 9 + i];
+            if (colVal != 0) {
+                if (col[colVal]) {
+                    if (debug) std::cout << "Duplicate " << colVal << " in column " << i << std::endl;
+                    return false;
+                }
+                col[colVal] = true;
+            }
+
+            // Check box
+            int boxRow = 3 * (i / 3) + j / 3;
+            int boxCol = 3 * (i % 3) + j % 3;
+            int boxVal = grid[boxRow * 9 + boxCol];
+            if (boxVal != 0) {
+                if (box[boxVal]) {
+                    if (debug) std::cout << "Duplicate " << boxVal << " in box " << i << std::endl;
+                    return false;
+                }
+                box[boxVal] = true;
+            }
+        }
+    }
+
+    return true;
+}
+
 Solver::~Solver() {}
 
 } // namespace Sudoku

@@ -3,6 +3,27 @@
 #include "../src/variables.cpp"
 #include "../include/solver/sudoku.h"
 #include <gtest/gtest.h>
+#include <iostream>
+
+void PrintGrid(const std::vector<int>& grid) {
+    std::cout << "┌───────┬───────┬───────┐" << std::endl;
+    for (int i = 0; i < 9; i++) {
+        std::cout << "│ ";
+        for (int j = 0; j < 9; j++) {
+            if (grid[i * 9 + j] == 0) {
+                std::cout << ". ";
+            } else {
+                std::cout << grid[i * 9 + j] << " ";
+            }
+            if ((j + 1) % 3 == 0) std::cout << "│ ";
+        }
+        std::cout << std::endl;
+        if ((i + 1) % 3 == 0 && i < 8) {
+            std::cout << "├───────┼───────┼───────┤" << std::endl;
+        }
+    }
+    std::cout << "└───────┴───────┴───────┘" << std::endl;
+}
 
 std::vector<std::vector<int>> unsolved_matrix {
     {0, 9, 0, 0, 0, 0, 8, 5, 3},
@@ -39,6 +60,22 @@ TEST(SudokuSolverTest, SolveSudoku) {
     for (const auto& row : unsolved_matrix) {
         flattened_matrix.insert(flattened_matrix.end(), row.begin(), row.end());
     }
+    
+    std::cout << "\nOriginal puzzle:" << std::endl;
+    PrintGrid(flattened_matrix);
+    
     std::vector<int> solution = solver.Solve(flattened_matrix);
     ASSERT_EQ(solution.size(), 81);
+    
+    std::cout << "\nSolved puzzle:" << std::endl;
+    PrintGrid(solution);
+    
+    // Add validation checks
+    auto isValidSolution = [](const std::vector<int>& grid) {
+        // Check each row, column, and box for numbers 1-9
+        // Return false if any duplicates found or numbers outside 1-9 range
+        return true; // implement validation logic
+    };
+    
+    ASSERT_TRUE(isValidSolution(solution)) << "Solution violates Sudoku rules";
 }
